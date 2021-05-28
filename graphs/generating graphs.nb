@@ -1,0 +1,319 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 10.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[     12164,        310]
+NotebookOptionsPosition[     11731,        292]
+NotebookOutlinePosition[     12103,        308]
+CellTagsIndexPosition[     12060,        305]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"(*", 
+   RowBox[{
+    RowBox[{
+    "To", " ", "generate", " ", "a", " ", "graph", " ", "H", " ", "by", " ", 
+     "duplicating", " ", "vertices", " ", "in", " ", "a", " ", "path"}], ",", 
+    " ", 
+    RowBox[{"enter", " ", "values", " ", "of", " ", "a"}], ",", "b", ",", "...",
+     ",", 
+    RowBox[{
+     RowBox[{
+     "g", " ", "below", " ", "to", " ", "specify", " ", "sizes", " ", "of", 
+      " ", "cliques", " ", "and", " ", "sub"}], "-", 
+     RowBox[{"paths", "."}]}]}], "*)"}], "\[IndentingNewLine]", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"a", "=", "500"}], ";"}], "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"b", "=", "200"}], ";"}], "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"c", "=", "200"}], ";"}], "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"d", "=", "200"}], ";"}], "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"e", "=", "200"}], ";"}], "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"f", "=", "200"}], ";"}], "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"g", "=", "500"}], ";"}], "\[IndentingNewLine]", 
+   "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"G", "=", 
+     RowBox[{"GraphDisjointUnion", "[", 
+      RowBox[{
+       RowBox[{"PathGraph", "[", 
+        RowBox[{"Range", "[", "a", "]"}], "]"}], ",", 
+       RowBox[{"CompleteGraph", "[", "b", "]"}], ",", 
+       RowBox[{"PathGraph", "[", 
+        RowBox[{"Range", "[", "c", "]"}], "]"}], ",", 
+       RowBox[{"CompleteGraph", "[", "d", "]"}], ",", 
+       RowBox[{"PathGraph", "[", 
+        RowBox[{"Range", "[", "e", "]"}], "]"}], ",", 
+       RowBox[{"CompleteGraph", "[", "f", "]"}], ",", 
+       RowBox[{"PathGraph", "[", 
+        RowBox[{"Range", "[", "g", "]"}], "]"}], ",", 
+       RowBox[{"VertexLabels", "\[Rule]", "\"\<Name\>\""}]}], "]"}]}], ";"}], 
+   "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"H", "=", 
+     RowBox[{"EdgeAdd", "[", 
+      RowBox[{"G", ",", 
+       RowBox[{"Union", "[", 
+        RowBox[{
+         RowBox[{"Table", "[", 
+          RowBox[{
+           RowBox[{"a", "\[UndirectedEdge]", "i"}], ",", 
+           RowBox[{"{", 
+            RowBox[{"i", ",", 
+             RowBox[{"a", "+", "1"}], ",", 
+             RowBox[{"a", "+", "b"}]}], "}"}]}], "]"}], ",", 
+         RowBox[{"Table", "[", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"a", "+", "b", "+", "1"}], "\[UndirectedEdge]", "i"}], 
+           ",", 
+           RowBox[{"{", 
+            RowBox[{"i", ",", 
+             RowBox[{"a", "+", "1"}], ",", 
+             RowBox[{"a", "+", "b"}]}], "}"}]}], "]"}], ",", 
+         RowBox[{"Table", "[", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"a", "+", "b", "+", "c"}], "\[UndirectedEdge]", "i"}], 
+           ",", 
+           RowBox[{"{", 
+            RowBox[{"i", ",", 
+             RowBox[{"a", "+", "b", "+", "c", "+", "1"}], ",", 
+             RowBox[{"a", "+", "b", "+", "c", "+", "d"}]}], "}"}]}], "]"}], 
+         ",", 
+         RowBox[{"Table", "[", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"a", "+", "b", "+", "c", "+", "d", "+", "1"}], 
+            "\[UndirectedEdge]", "i"}], ",", 
+           RowBox[{"{", 
+            RowBox[{"i", ",", 
+             RowBox[{"a", "+", "b", "+", "c", "+", "1"}], ",", 
+             RowBox[{"a", "+", "b", "+", "c", "+", "d"}]}], "}"}]}], "]"}], 
+         ",", 
+         RowBox[{"Table", "[", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"a", "+", "b", "+", "c", "+", "d", "+", "e"}], 
+            "\[UndirectedEdge]", "i"}], ",", 
+           RowBox[{"{", 
+            RowBox[{"i", ",", 
+             RowBox[{"a", "+", "b", "+", "c", "+", "d", "+", "e", "+", "1"}], 
+             ",", 
+             RowBox[{
+             "a", "+", "b", "+", "c", "+", "d", "+", "e", "+", "f"}]}], 
+            "}"}]}], "]"}], ",", 
+         RowBox[{"Table", "[", 
+          RowBox[{
+           RowBox[{
+            RowBox[{
+            "a", "+", "b", "+", "c", "+", "d", "+", "e", "+", "f", "+", "1"}],
+             "\[UndirectedEdge]", "i"}], ",", 
+           RowBox[{"{", 
+            RowBox[{"i", ",", 
+             RowBox[{"a", "+", "b", "+", "c", "+", "d", "+", "e", "+", "1"}], 
+             ",", 
+             RowBox[{
+             "a", "+", "b", "+", "c", "+", "d", "+", "e", "+", "f"}]}], 
+            "}"}]}], "]"}]}], "]"}]}], "]"}]}], ";"}], 
+   "\[IndentingNewLine]"}]}]], "Input",
+ CellChangeTimes->{{3.7688220565213737`*^9, 3.768822086251835*^9}, {
+   3.768822534075279*^9, 3.7688225343151484`*^9}, 3.768822887013839*^9, {
+   3.7688759628251867`*^9, 3.7688759812893934`*^9}, {3.7688760134570165`*^9, 
+   3.7688760334888887`*^9}, 3.768876519417041*^9, 3.7688767611686735`*^9, {
+   3.7689121786444745`*^9, 3.7689121798103795`*^9}, {3.768912373915393*^9, 
+   3.768912445005*^9}, {3.768913158902357*^9, 3.768913234222883*^9}, {
+   3.768913598182788*^9, 3.7689136100373497`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"(*", 
+   RowBox[{
+    RowBox[{
+    "To", " ", "generate", " ", "a", " ", "graph", " ", "H", " ", "by", " ", 
+     "taking", " ", "the", " ", "complement", " ", "of", " ", "a", " ", 
+     "triangle", " ", "free", " ", "graph"}], ",", " ", 
+    RowBox[{
+    "enter", " ", "a", " ", "graph", " ", "size", " ", "in", " ", "L2"}], ",",
+     " ", 
+    RowBox[{
+    "pick", " ", "a", " ", "graph", " ", "from", " ", "the", " ", "list"}], 
+    ",", " ", 
+    RowBox[{
+    "and", " ", "enter", " ", "it", " ", "for", " ", "G", " ", "below", " ", 
+     RowBox[{"(", 
+      RowBox[{"where", " ", "it", " ", "says", "  ", "\"\<Foster250A\>\""}], 
+      ")"}]}]}], "*)"}], "\[IndentingNewLine]", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"L1", "=", 
+     RowBox[{"GraphData", "[", "\"\<TriangleFree\>\"", "]"}]}], ";"}], 
+   "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"L2", "=", 
+     RowBox[{"GraphData", "[", "200", "]"}]}], ";"}], "\[IndentingNewLine]", 
+   RowBox[{"Intersection", "[", 
+    RowBox[{"L1", ",", "L2"}], "]"}], "\[IndentingNewLine]"}]}]], "Input",
+ CellChangeTimes->{{3.7688223950300407`*^9, 3.7688224386750655`*^9}, {
+   3.7688225493712883`*^9, 3.7688225747631526`*^9}, {3.7688226157074027`*^9, 
+   3.768822619139648*^9}, 3.768822796530262*^9, {3.7688229009272704`*^9, 
+   3.7688229113817043`*^9}, {3.768825776126999*^9, 3.7688258078941603`*^9}, 
+   3.7688760494274073`*^9, 3.7688761599798517`*^9, 3.7688762174595404`*^9, 
+   3.768876414315564*^9, 3.7688765263873568`*^9, {3.7689123779898453`*^9, 
+   3.768912378399377*^9}, {3.768913244132961*^9, 3.7689133635573273`*^9}}],
+
+Cell[BoxData[{
+ RowBox[{"G", "=", 
+  RowBox[{
+  "GraphData", "[", "\"\<Foster250A\>\"", "]"}]}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"n", "=", 
+   RowBox[{"VertexCount", "[", "G", "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"H", "=", 
+   RowBox[{"EdgeDelete", "[", 
+    RowBox[{
+     RowBox[{"CompleteGraph", "[", "n", "]"}], ",", 
+     RowBox[{"EdgeList", "[", "G", "]"}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]"}], "Input",
+ CellChangeTimes->{{3.768913300244957*^9, 3.7689133115403337`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"(*", 
+   RowBox[{
+    RowBox[{
+    "when", " ", "a", " ", "graph", " ", "H", " ", "is", " ", "created", " ", 
+     "by", " ", "one", " ", "of", " ", "the", " ", "two", " ", "methods", " ",
+      "above"}], ",", " ", 
+    RowBox[{
+    "run", " ", "the", " ", "following", " ", "to", " ", "write", " ", "the", 
+     " ", "edges", " ", "to", " ", 
+     RowBox[{"file", ".", " ", "The"}], " ", "place", " ", "it", " ", 
+     "writes", " ", "to", " ", "is", " ", "the", " ", "default", " ", 
+     "folder"}], ",", " ", 
+    RowBox[{
+    "which", " ", "can", " ", "be", " ", "changed", " ", "by", " ", "adding", 
+     " ", "a", " ", "prefix", " ", "to", " ", "the", " ", "filename", " ", 
+     "string", " ", "below"}]}], "*)"}], "\[IndentingNewLine]", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"m", "=", 
+     RowBox[{"EdgeCount", "[", "H", "]"}]}], ";"}], "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"n", "=", 
+     RowBox[{"VertexCount", "[", "H", "]"}]}], ";"}], "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"filename", "=", 
+     RowBox[{"\"\<Graph\>\"", "<>", 
+      RowBox[{"ToString", "[", "n", "]"}], "<>", "\"\<.txt\>\""}]}], ";"}], 
+   "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"WriteString", "[", 
+     RowBox[{"filename", ",", 
+      RowBox[{"VertexCount", "[", "H", "]"}], ",", "\"\< \>\"", ",", 
+      RowBox[{"EdgeCount", "[", "H", "]"}], ",", "\"\<\\n\>\""}], "]"}], 
+    ";"}], "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"For", "[", 
+     RowBox[{
+      RowBox[{"i", "=", "1"}], ",", 
+      RowBox[{"i", "\[LessEqual]", "m"}], ",", 
+      RowBox[{"i", "++"}], ",", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{"WriteString", "[", 
+        RowBox[{"filename", ",", 
+         RowBox[{
+          RowBox[{
+           RowBox[{
+            RowBox[{"EdgeList", "[", "H", "]"}], "[", 
+            RowBox[{"[", "i", "]"}], "]"}], "[", 
+           RowBox[{"[", "1", "]"}], "]"}], "-", "1"}], ",", "\"\< \>\"", ",", 
+         RowBox[{
+          RowBox[{
+           RowBox[{
+            RowBox[{"EdgeList", "[", "H", "]"}], "[", 
+            RowBox[{"[", "i", "]"}], "]"}], "[", 
+           RowBox[{"[", "2", "]"}], "]"}], "-", "1"}], ",", "\"\<\\n\>\""}], 
+        "]"}], ";"}]}], "\[IndentingNewLine]", "]"}], ";"}], 
+   "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"For", "[", 
+     RowBox[{
+      RowBox[{"i", "=", "1"}], ",", 
+      RowBox[{"i", "\[LessEqual]", "m"}], ",", 
+      RowBox[{"i", "++"}], ",", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{"WriteString", "[", 
+        RowBox[{"filename", ",", 
+         RowBox[{"RandomInteger", "[", 
+          RowBox[{"{", 
+           RowBox[{"1", ",", "n"}], "}"}], "]"}], ",", "\"\<\\n\>\""}], "]"}],
+        ";"}]}], "\[IndentingNewLine]", "]"}], ";"}], "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"Close", "[", "filename", "]"}], ";"}], 
+   "\[IndentingNewLine]"}]}]], "Input",
+ CellChangeTimes->{{3.768822156317577*^9, 3.7688222710278225`*^9}, {
+  3.768822304652272*^9, 3.7688223941160913`*^9}, {3.7689095601591434`*^9, 
+  3.7689095664946394`*^9}, {3.768913380670315*^9, 3.7689134714387856`*^9}}],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.768875716676898*^9, 3.7688758072020407`*^9}, {
+   3.768876610930836*^9, 3.768876635264617*^9}, {3.7688768001764565`*^9, 
+   3.768876844128191*^9}, {3.76890742559956*^9, 3.768907488791149*^9}, {
+   3.7689077657979355`*^9, 3.7689077660063624`*^9}, {3.7689078073026342`*^9, 
+   3.7689078157704353`*^9}, {3.768907869266579*^9, 3.7689078748976555`*^9}, {
+   3.768909124027363*^9, 3.768909136410164*^9}, {3.7689091707309427`*^9, 
+   3.7689092133845096`*^9}, {3.768909400098092*^9, 3.768909403505062*^9}, 
+   3.7689094381857543`*^9, {3.768909746235185*^9, 3.768909756042017*^9}, {
+   3.768910018155222*^9, 3.7689100274254293`*^9}, {3.768910173755313*^9, 
+   3.7689101853374796`*^9}, {3.7689102975948057`*^9, 
+   3.7689103010970564`*^9}, {3.7689111797948093`*^9, 3.768911183826174*^9}, {
+   3.768911254483224*^9, 3.76891129621719*^9}, {3.768911331240988*^9, 
+   3.768911355903801*^9}, {3.768911892466693*^9, 3.768911923912741*^9}, {
+   3.768912073649403*^9, 3.768912092208601*^9}, 3.7689121747903585`*^9}]
+},
+WindowSize->{1920, 997},
+WindowMargins->{{-8, Automatic}, {Automatic, -8}},
+Magnification:>0.9 Inherited,
+FrontEndVersion->"10.0 for Microsoft Windows (64-bit) (July 1, 2014)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[558, 20, 4854, 122, 270, "Input"],
+Cell[5415, 144, 1612, 35, 110, "Input"],
+Cell[7030, 181, 520, 14, 90, "Input"],
+Cell[7553, 197, 3125, 77, 327, "Input"],
+Cell[10681, 276, 1046, 14, 29, "Input"]
+}
+]
+*)
+
+(* End of internal cache information *)

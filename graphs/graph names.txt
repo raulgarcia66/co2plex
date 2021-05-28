@@ -1,0 +1,26 @@
+50.1: K_50-(Fullerene, {50,1})
+50.2: K_50-(Fullerene, {50,100})
+50.3: K_50-(GeneralizedPetersen, {25, 9})
+50.4: K_50-(SzekeresSnark)
+50.5: P_5+K_10+P_5+K_10+P_5+K_10+P_5
+
+100.1: K_100-(HigmanSimsGraph)
+100.2: K_100-(HoffmanSingletonBipartiteDoubleGraph)
+100.3: K_100-(Antelope, {10, 10})
+100.4: K_100-(Fiveleaper, {10, 10})
+100.5: P_10+K_20+P_10+K_20+P_10+K_20+P_10
+
+200.1: K_200-(Foster200A)
+200.2: K_200-(HigmanSimsBipartiteDoubleGraph)
+
+250.1: K_250-(Foster250A)
+250.2: P_25+K_25+P_50+K_50+P_50+K_25+P_25
+
+500.1: K_500-Foster500A
+500.2: P_50+K_50+P_100+K_100+P_100+K_50+P_50
+
+1000.1: P_100+K_200+P_100+K_200+P_100+K_200+P_100
+
+2000.1: P_500+K_200+P_200+K_200+P_200+K_200+P_500
+
+2500.1: P_500+K_200+P_500+K_100+P_500+K_200+P_500
