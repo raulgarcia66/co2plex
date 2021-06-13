@@ -116,7 +116,6 @@ class Graph
 	vector<bool> iwapBF(vector<int> &weight, vector<int> &whiteReachIrreg, vector<int> whiteSource, vector<int> whiteSinks, vector<int> whiteVerticesInWings, vector<int> irregularVertices, vector< vector<int> > irregularPairs);
 	vector<int> bellmanFordVariant(vector<int> regularSource, vector< vector<int> > regularSinks, vector<int> whiteVerticesInWings, vector<int> irregularVertices, vector< vector<int> > irregularPairs);
     
-    
 };
 
 Graph::Graph(char* inputFile, char* weightFile){
@@ -126,6 +125,8 @@ Graph::Graph(char* inputFile, char* weightFile){
 	f_in>>n;//number of vertices
 	f_in>>m;//number of edges
     //cout << "Number of Nodes: " << n << "\nNumber of Edges: " << m << "\n";
+	
+	numMatchingProblem = 0;
 
     int *x = new int[m];
 	int *y = new int[m];
@@ -138,11 +139,11 @@ Graph::Graph(char* inputFile, char* weightFile){
 	// 	cout << x[i] << " " << y[i] << "\n";
 	// }
 
-    int z,w;
+    int w;
     f_win.open(weightFile);
     for (int i = 0; i < n; i++) {
-        f_win>>z>>w;
-        //nodes.push_back(z); // nodes is meant to store the current white nodes
+        f_win>>w; // file just has weights (use f_win>>z>>w if it has nodes and weights)
+        //nodes.push_back(z);
         weights.push_back(w);
     }
     // for(int i = 0; i < n; i++){
@@ -153,7 +154,7 @@ Graph::Graph(char* inputFile, char* weightFile){
 	
 	//Create the attribute C matrix
 	C = new int*[n];
-	for( int i = 0; i < n; i++) {
+	for(int i = 0; i < n; i++) {
 		C[i] = new int[n];
 	}
 	
@@ -191,13 +192,14 @@ void Graph::initMinty(){
    // Store all the nodes (all vertices are white on the first step)
     for (int i = 0; i < n; i++) {
         nodes.push_back(i);
-        //S.push_back(i);
+        //S.push_back(i); // if you want to see the nodes pushed (not supposed to be in S)
     }
-    //PrintVector(S); // if you want to see the nodes pushed
+    //PrintVector(S);
     Minty(S);
 }
 
 bool Graph::adjacent(vector<int> A, vector<int> B){
+	// If a node in A is adjacent to a node in B, return true
 	for (int i = 0; i < A.size(); i++) {
 		for (int j = 0; j < B.size(); j++) {
 			if (C[A.at(i)][B.at(j)]) {
@@ -213,7 +215,7 @@ int Graph::numberOfBlackNeighbors(int vertex, vector<int> blackVertices){
     int numOfN = 0;
 
     for (int i = 0; i < blackVertices.size(); i++) {
-        if ( C[vertex][blackVertices.at(i)]) {
+        if (C[vertex][blackVertices.at(i)]) {
             numOfN++;
         }
         if (numOfN == 3) {
@@ -237,6 +239,7 @@ int Graph::weightOfaPath(vector<int> weightOfBlackPath, vector<int> weightofWhit
 vector<int> Graph::maxWeightWhiteAugPath(vector<int> SF, vector<int> F, vector<int> B, vector<int> blackVertices){
 	
 	sort (blackVertices.begin(),blackVertices.end());
+	//printVector(blackVertices)
     // vector<int> mergeFT12(FT1.size()+FT2.size()+SFT2.size());//Contains FT1, FT2 & SFT2
     // vector<int> mergeF(FT1.size()+FT2.size());
     // merge (FT1.begin(),FT1.end(),FT2.begin(),FT2.end(),mergeF.begin());
@@ -250,7 +253,7 @@ vector<int> Graph::maxWeightWhiteAugPath(vector<int> SF, vector<int> F, vector<i
     int maxWeightl0 = -1;
 	int maxWeightln = -1;
     vector<int> maxWWAPl0;
-	vector<int> maxWWAPln;
+	vector<int> maxWWAPln; // used later
     for (int i = 0; i < SF.size(); i++) {
         int tempMax = weights.at(SF.at(i));
         if (tempMax > maxWeightl0) {
@@ -379,7 +382,7 @@ vector<int> Graph::maxWeightWhiteAugPath(vector<int> SF, vector<int> F, vector<i
 					int N = 0;
                     //EdmondsG = Edmonds(F.at(a), F.at(b), xa, xb, blackSingle, blackPairs, BT1, BT2, BT3,N);
 					EdmondsG = Edmonds(F.at(a), F.at(b), xa, xb, blackVertices, B, N);
-					
+
 					sort(EdmondsG.begin(), EdmondsG.end());
                     
                    // cout<<"LINE 460\n";
@@ -857,7 +860,7 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 	
     
     //Fact 2.2: For any regularII vertex v or pair, N(v) is uniquely partitioned into N1(v) and N2(v) so that for any x and y in distinct wings
-    //Now we want to find all the pairs x and y in N(v) that belong to distict wings
+    //Now we want to find all the pairs x and y in N(v) that belong to distinct wings
 
     /* 1. We already enumerated the wings (put the tip of the wings on enumeratedWings and the size gives the number of possible wings)
        2. Save in which wing each neighbor is contained */
@@ -1849,7 +1852,7 @@ void Graph::Minty(vector<int> S){
         }
     }
     
-    // //3. Find maximum weighted white augmenting path between two distinct free vertices
+    //3. Find maximum weighted white augmenting path between two distinct free vertices
     vector<int> maximumWWAP = maxWeightWhiteAugPath(superFreeVertices, freeVertices, boundedVertices, myS);
     //vector<int> maximumWWAP;
 
@@ -1857,7 +1860,7 @@ void Graph::Minty(vector<int> S){
     //PrintVector(maximumWWAP);
     
     
-    // //4. If no such path exists for S, then stop. S is optimal;
+    //4. If no such path exists for S, then stop. S is optimal;
     if (maximumWWAP.size() == 0) {
         
         cout<<"#####################max weight co-2-plex########################:"<<endl;
