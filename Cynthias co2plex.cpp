@@ -466,10 +466,10 @@ vector<int> Graph::maxWeightWhiteAugPath(vector<int> SFT1, vector<int> SFT2, vec
 						double matzeit = 0.0;
 						double genzeit = 0.0;
 						int ncount, ecount;
-						long l;
-						
+						//long l;
+						time_t l; // my fix
 						//include the right header for this one otherwise it gives you a warning( "time.h")
-						seed = time (&l);
+						seed = time (&l); //stores the current time in l
 						
 						
 						ncount = N;
