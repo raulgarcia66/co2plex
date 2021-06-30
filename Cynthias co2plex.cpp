@@ -9,10 +9,9 @@
 
 //#include<assert.h>
 #include "modcppstd.hh"
-
 //#include "time.h"
 
-
+//extern double copy_time;
 #ifdef __cplusplus
 extern "C" {
 #endif
