@@ -757,6 +757,7 @@ vector<int> Graph::edmondsCorrection1(vector<int> regNeib, vector<int> whiteWing
 	// bool moreLevels = true;
 
 	/********** Need to remove white vertices in wings already visited *********/
+	/* Can pass whichWings and remove vertices by wings, or a set difference*/
 	//Case: whiteWings is vector<int>
 	//vector<int> whiteWingsDiff(whiteWings.size() + regNeib.size()); //0 0 ... 0
 	vector<int>::iterator it;
