@@ -1,5 +1,5 @@
 /* 
-Minty's Generalized Algorithm for the Max Weight Co2Plex Problem on a {claw,bull}-free Graph
+Minty's Generalized Algorithm for the Max Weight Co2Plex on a {claw,bull}-free Graph
 */
 
 //#ifndef KGRAPH_H

@@ -1923,7 +1923,7 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, vector<i
 				
 				if (x!=-1 && y != -1) {
 					//Recall whichWings[i] contains indices to the wings that whiteVerticesNonAorB.at(i) belongs to
-				
+					//Don't need to sort here first because they were already sorted above
 					it=std::set_symmetric_difference (whichWings[x].begin(),whichWings[x].end(), whichWings[y].begin(),whichWings[y].end(), symmDiffWing.begin());
 					
 					
