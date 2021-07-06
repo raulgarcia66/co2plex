@@ -1,5 +1,5 @@
 /*
-    Minty's Algorithm for Max Weight Stable Set on a claw-free Graph
+    Minty's Algorithm for the Max Weight Stable Set on a claw-free Graph
 */
 
 //#ifndef KGRAPH_H
@@ -19,7 +19,7 @@
 extern "C" {
 #endif
 
-	struct CCdatagroup;  //might need file that this struct
+	struct CCdatagroup;  //might need file that creates this struct
 	int perfect_match(int ncount, CCdatagroup *dat, int ecount,
 					int **elist, int **elen, int **ourMatch, int **ourWeights, char *blo_filename,
 					char *mat_filename, int just_fractional, int no_fractional,
@@ -235,22 +235,16 @@ int Graph::weightOfaPath(vector<int> weightOfBlackPath, vector<int> weightofWhit
 
 vector<int> Graph::maxWeightWhiteAugPath(vector<int> SF, vector<int> F, vector<int> B, vector<int> blackVertices){
 	
-	sort (blackVertices.begin(),blackVertices.end());
+	sort(blackVertices.begin(), blackVertices.end());
 	//printVector(blackVertices)
-    // vector<int> mergeFT12(FT1.size()+FT2.size()+SFT2.size());//Contains FT1, FT2 & SFT2
-    // vector<int> mergeF(FT1.size()+FT2.size());
-    // merge (FT1.begin(),FT1.end(),FT2.begin(),FT2.end(),mergeF.begin());
-    // merge (mergeF.begin(),mergeF.end(),SFT2.begin(),SFT2.end(),mergeFT12.begin());
-    //cout<<"&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&"<<endl;
-    //PrintVector(mergeFT12);
 
     //2.1 Generate all white alternating paths of length 0 or 2
     
     //Save SF vertex with maximum weight only
-    int maxWeightl0 = -1;
-	int maxWeightln = -1;
+    int maxWeightl0 = 0; // Changed these to 0 (from -1) so that an empty vector is returned if all paths are nonpositive
+	int maxWeightln = 0;
     vector<int> maxWWAPl0;
-	vector<int> maxWWAPln; // used later
+	vector<int> maxWWAPln;
     for (int i = 0; i < SF.size(); i++) {
         int tempMax = weights.at(SF.at(i));
         if (tempMax > maxWeightl0) {
@@ -260,44 +254,13 @@ vector<int> Graph::maxWeightWhiteAugPath(vector<int> SF, vector<int> F, vector<i
         }
     }
 
-	// Ignore this block as black pairs can't exist in a stable set --------------------------------------
-    // //Now we will generate WAP of length 2 and save it only if its weight is greater than the current max weight
-    // vector<int> blackPairs;//Will always be even. An odd entry will always be paired with the even entry that preceeds it
-    // vector<int> sortBlackPairs;
-    // for (int i = 0; i < blackVertices.size(); i++) {
-    //     for (int j = i+1; j < blackVertices.size(); j++) {
-    //         if (C[blackVertices.at(i)][blackVertices.at(j)]) {
-    //             blackPairs.push_back(blackVertices.at(i));
-    //             blackPairs.push_back(blackVertices.at(j));
-    //             sortBlackPairs.push_back(blackVertices.at(i));
-    //             sortBlackPairs.push_back(blackVertices.at(j));
-    //             break;// Since it is only adjacent to one other black vertex
-    //         }
-    //     }
-    // }
-    
-    // //Black pairs are not contained in white alternating paths of length 2
-    // vector<int> blackSingle(n);                      // 0  0  0 ... 0 (n of them)
-    // vector<int>::iterator it;
-    
-	// //sort (blackVertices.begin(), blackVertices.end());you sort them at the beginning of the function
-    // sort (sortBlackPairs.begin(),sortBlackPairs.end());
-    
-    // it=std::set_symmetric_difference (blackVertices.begin(),blackVertices.end(), sortBlackPairs.begin(),sortBlackPairs.end(), blackSingle.begin());
-    // //  blackvertices ... 0  0  0  0
-    // blackSingle.resize(it-blackSingle.begin());//only black vertices
-	//---------------------------------------------------------------------------------------------------
-
-
-	//All black vertices are single, hence replaced blackSingle with blackVertices
-	//Now we will generate WAP of length 2 and save it only if its weight is greater than the current max weight
+	//Generate WAPs of length 2 and save it only if its weight is greater than the current max weight
     vector<int> weightWhite;
     vector<int> weightBlack;
     for (int i = 0; i < blackVertices.size(); i++) {
         int adjacent1 = -1;
         int adjacent2 = -1;
         weightBlack.push_back(weights.at(blackVertices.at(i)));
-        //for (int j = 0; j < mergeFT12.size(); j++) {
 		for (int j = 0; j < F.size(); j++) { 
             if (adjacent1 == -1 && C[blackVertices.at(i)][F.at(j)]) {
                 adjacent1 = F.at(j);
@@ -329,89 +292,55 @@ vector<int> Graph::maxWeightWhiteAugPath(vector<int> SF, vector<int> F, vector<i
     for (int a = 0; a < F.size(); a++) {
         for (int b = a+1; b < F.size(); b++) {
             if (!C[F.at(a)][F.at(b)]) {
-                //vector<int> xa;// black vertex or vertices adjacent to a // old code
-                //vector<int> xb;// black vertex or vertices adjacent to b
-				//Let xa and xb be the black vertices andjacent to a and b respectively (only 1 because free)
+				//xa and xb are the black vertices adjacent to a and b, respectively
 				int xa = -1;
 				int xb = -1;
                 for (int i = 0; i < blackVertices.size(); i++) {
                     if (C[a][blackVertices.at(i)] && xa == -1) {
-                        //xa.push_back(blackVertices.at(i));
 						xa = blackVertices.at(i);
                     }
                     
                     if (C[b][blackVertices.at(i) && xb == -1]) {
-                        //xb.push_back(blackVertices.at(i));
 						xb = blackVertices.at(i);
                     }
 					if (xa != -1 && xb != -1) {
 						break;
 					}
-                }
-                
-                bool xEqual = false;
-                
-				// obsolete
-                // for (int i = 0; i < xa.size(); i++) {
-                //     for (int j = 0; j < xb.size(); j++) {
-                //         //Want to make sure the black vertices to which they are joined are distinct
-                //         if (xa.at(i) == xb.at(j)) {
-                //             xEqual = true;
-                //             break;
-                //         }
-                //     }
-                    
-                //     if (xEqual) { //needed?
-                //         break;
-                //     }
-                // }
-
-				if (xa == xb) {
-					xEqual = true;
 				}
                 
-                //if xa != xb
-                if (!xEqual) {
-				
+				if (xa != xb) {
+					//Find MWWAP
 					vector< vector<int> > EdmondsG;
-                    //find MWWAP
-					//N = 2*rbsN+2
-					int N = 0;
-                    //EdmondsG = Edmonds(F.at(a), F.at(b), xa, xb, blackSingle, blackPairs, BT1, BT2, BT3,N);
+					int N = 0; // number of nodes in the Edmonds graph
 					EdmondsG = Edmonds(F.at(a), F.at(b), xa, xb, blackVertices, B, N);
 
-					sort(EdmondsG.begin(), EdmondsG.end());
-                    
-                   // cout<<"LINE 460\n";
-					
-					if ( N > EdmondsG.size()) {
+					sort(EdmondsG.begin(), EdmondsG.end()); //doesn't rearrange each component vertex, right?
+                    					
+					if (N > EdmondsG.size()) {
 						double matzeit = 0.0;
 						double genzeit = 0.0;
 						int ncount, ecount;
-						//long l; // Cynthia's code
-						time_t l; // my fix
+						//long l;
+						time_t l; //l must be of this type
 						
 						//include the right header for this one otherwise it gives you a warning( "time.h")
 						seed = time (&l);
-						
 						
 						ncount = N;
 						//mydat = NULL;
 						ecount = EdmondsG.size();
 						
-						
 						//cout << "Edmonds number of vertices: "<< N<<endl;
 						//cout << "Edmonds number of edges: "<< EdmondsG.size()<<endl;
 						//PrintVectorVector(EdmondsG);
-						
 						
 						int *elen  = (int*)malloc(sizeof(int) * ecount);
 						int *ourMatch = (int*)malloc(sizeof(int) * ncount);
 						int *ourWeights = (int*)malloc(sizeof(int) * ncount/2);
 						
 						for (int i = 0; i < ecount; i++) {
-                                //Negative since we are solving the Max weighted co-2-plex and blossom solves
-                                //for min weight perfect matching
+                                //Negative since we are solving for the max weighted stable set and perfect_match 
+								//solves for min weight perfect matching
 								elen[i] = -EdmondsG[i].at(2);
 
 						}
@@ -438,43 +367,44 @@ vector<int> Graph::maxWeightWhiteAugPath(vector<int> SF, vector<int> F, vector<i
 						}
 						cout << "\n";*/
 						
-                        //cout<<"LINE 515\n";
                         
 						/*Returns 0 if it worked and 1 otherwise (for example, when one
 						of the mallocs failed). The nodes in the graph should be named 
 						0 through #nodes - 1 */
-						// Generalize to maximal matching
-						// Perfect match: 
+						// Generalize to maximum matching instead of perfect matching
+						// Perfect match: every vertex is adjacent to 1 edge
 						if (perfect_match (ncount, NULL, ecount, &elist, &elen, &ourMatch, &ourWeights,
 						   blossom_file, match_file, just_frac, no_frac, 
 						   use_all_trees, partialprice, &matzeit)) {
-							fprintf (stderr, "perfect_match failed\n");
+							fprintf(stderr, "perfect_match failed\n");
 			
 						}
+
+						//TODO: M delta M* contains a maximum weight alternating path between a^ and b^
+						//Need to extract this path and store the vertices appropriately
+						//M is the set of black edges in the Edmonds graph
+						//M* is the maximum weight matching found
 						
 						//The mapping is a pair entry(i)-> entries 2i and 2i+1 weight
-						//Entries 2i and 2i+1 correspond to node(i) in the original graph
+						//Entries 2i and 2i+1 correspond to node i in the original graph
 						for (int i = 0; i < ncount; i++) {
-							if (ourMatch[i]%2 == 0) {
-								maxWWAPln. push_back(ourMatch[i]/2);
-							
+							if (ourMatch[i] % 2 == 0) {
+								maxWWAPln.push_back(ourMatch[i]/2);
 							}
 							else {
-								maxWWAPln. push_back((ourMatch[i]-1)/2);
+								maxWWAPln.push_back((ourMatch[i]-1)/2);
 							}
 
 						}
 						
 						int tempMaxln = 0;
-						for (int i = 0; i < maxWWAPln. size(); i++) {
-							tempMaxln += weights. at(maxWWAPln. at(i));
+						for (int i = 0; i < maxWWAPln.size(); i++) {
+							tempMaxln += weights.at(maxWWAPln.at(i));
 						}
 						
 						if (tempMaxln > 0 && tempMaxln > maxWeightln) {
 							maxWeightln = tempMaxln;
 						}
-						
-						
 						
 						fflush (stdout);
 						
@@ -482,15 +412,14 @@ vector<int> Graph::maxWeightWhiteAugPath(vector<int> SF, vector<int> F, vector<i
 						free(ourWeights);
 					}
 					
-                    
-					
                 }
                 
             }
         }
     }
-    
-	if (maxWWAPln > maxWWAPl0) {  //checks element by element as needed (both could have same weight)
+
+	//if (maxWWAPln > maxWWAPl0) {
+	if (maxWeightln > maxWeightl0) {
 		return maxWWAPln;
 	}
 	
@@ -1278,32 +1207,16 @@ int Graph::edmondsCorrection3(int y11, int yl1, int y12, int yl2, vector<int> wh
 vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, int xb, vector<int> blackVertices, vector<int> boundedVertices, int &N){
     
     vector< vector<int> > edmondsG;
-   
-    // sort(xa.begin(),xa.end());
-    // sort(xb.begin(),xb.end());
-    //sort(blackSetSingle.begin(),blackSetSingle.end());//Don't really need to do this anymore, but leave it for now
-	//int weightxA = 0;
-	//int weightxB = 0;
 	
-	//for (int i = 0 ; i < xa.size(); i++) {
 	int weightxA = weights.at(xa);
-	//}
-	
-	//for (int i = 0 ; i < xb.size(); i++) {
 	int weightxB = weights.at(xb);
-	//}
 	
     /*We want to construct the reduced basic structure
-     1.1 Ignore all the SF vertices (not passed to the function)
-     1.2 Ignore free vertices except a and b (not passed either)
-     1.3 Ignore all white vertices adjacent to a or b, since they will never appear in an alternating path; 
-	 	 Note: These are necessarily bounded vertices
+     1.1 Ignore all the SF vertices (not passed to function)
+     1.2 Ignore free vertices except a and b (not passed to function)
+     1.3 Ignore all white vertices adjacent to a or b, since they will never appear in an alternating path
      */
     
-    // vector<int> whiteverticesNonAdjacentAorB( boundedVerticesT1.size() + boundedVerticesT2.size() + boundedVerticesT3.size());
-    // vector<int> whitev2(boundedVerticesT1.size()+ boundedVerticesT2.size());
-    // merge (boundedVerticesT1.begin(),boundedVerticesT1.end(),boundedVerticesT2.begin(),boundedVerticesT2.end(),whitev2.begin());
-    // merge (whitev2.begin(),whitev2.end(),boundedVerticesT3.begin(),boundedVerticesT3.end(),whiteverticesNonAdjacentAorB.begin());
 	vector <int> whiteverticesNonAdjacentAorB;
 
 	whiteverticesNonAdjacentAorB.resize(boundedVertices.size(),'\0'); // does not contain A or B
@@ -1327,10 +1240,11 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
     //cout<<"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"<<endl;
     //PrintVector(whiteverticesNonAdjacentAorB);
     
-    //Now we form the reduced basic structure that is also the weight function. However, we dont have to get a copy of the weights of the nodes since we have global access to them (only for black vertices)
+    /* Now we form the reduced basic structure that is also the weight function. However, we dont have to get
+	a copy of the weights of the nodes since we have global access to them (only for black vertices) <- ??? */
 	vector<int> whiteRBS; //Contains the white vertices in the RBS, including A and B
     
-    whiteRBS.resize( whiteverticesNonAdjacentAorB.size(), '\0');
+    whiteRBS.resize(whiteverticesNonAdjacentAorB.size(), '\0');
     copy(whiteverticesNonAdjacentAorB.begin(), whiteverticesNonAdjacentAorB.end(), whiteRBS.begin());
     whiteRBS.push_back(freeVertexA);
     whiteRBS.push_back(freeVertexB);
@@ -1338,290 +1252,180 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 	vector<int> blackRBS; //Contains the black vertices in the RBS
 
 	blackRBS.resize(blackVertices.size(),'\0');
-	copy(blackVertices.begin(),blackVertices.end(),blackRBS.begin());
-
-    // vector<int> blackSingleRBS;
-    
-    // blackSingleRBS.resize( blackSetSingle.size(), '\0');
-    // copy(blackSetSingle.begin(), blackSetSingle.end(), blackSingleRBS.begin());
-    
-    // vector< vector<int> > blackPairsRBS;
-    // vector<int> weightsBlackPairs;
-    
-    // for (int i = 0; i < blackPairsRBS.size(); i++) {
-    //     //The original black set comes sorted, which implies entry[i] < entry[i+1]
-    //     if (i%2 == 0) {
-    //         vector<int> temp;
-    //         temp.push_back(blackSetPairs.at(i));
-    //         temp.push_back(blackSetPairs.at(i+1));
-    //         sort(temp.begin(),temp.end());
-            
-    //         if (temp != xa && temp != xb) {
-    //             blackPairsRBS.push_back(temp);
-    //             int weight = 0;
-    //             weight = weights.at(blackSetPairs.at(i)) + weights.at(blackSetPairs.at(i+1)) ;
-    //             weightsBlackPairs.push_back(weight);
-    //         }
-    //         temp.clear();
-    //     }
-    // }
+	copy(blackVertices.begin(), blackVertices.end(), blackRBS.begin());
     
     
-    /***********************CLASIFICATION OF BLACK VERTICES*************************/
+    /***********************CLASSIFICATION OF BLACK VERTICES*************************/
     
-    // A nonempty set of all bounded vertices, which are adjacent to the same two black vertices x and y is called a wing
-    // First figure out which black vertices are adjacent to bounded vertices
+    // A nonempty set of all bounded vertices, which are adjacent to the same two black vertices x and y, is called a wing
+    // First figure out which black vertices are adjacent to bounded vertices (or vertices in whiteverticesNonAdjacentAorB)
     
-    //int sinPairSize = blackSingleRBS.size() + blackPairsRBS.size();
     vector< int > numWings(blackRBS.size()); //keeps a counter to the number of wings each black vertex is adjacent to. They are 0 originally.
     
     vector< vector<int> > enumerateWings;//Keeps track of tip of the wings as pairs (ie, the two black vertices). Its size also gives how many different wings we have
 	vector<int> whiteInWings; //Will store only one vertex that is in each distinct wing
 	// enumerateWings and whiteInWings are the same size, and the i-th component of whiteInWings
 	// is one vertex that is in the wing corresponding to the i-th component of enumerateWings
+	vector< vector<int> > whiteInWingsAll; //Store all white vertices in each wing
 	
     for (int i = 0; i < blackRBS.size(); i++) {
         int numi = numWings.at(i);
         for (int j = i+1; j < blackRBS.size(); j++) {
-            
             int numj = numWings.at(j);
+			bool wingAdded = false;
+			vector<int> tempWhites;
             for (int k = 0; k < whiteverticesNonAdjacentAorB.size(); k++) {
                 if (C[whiteverticesNonAdjacentAorB.at(k)][blackRBS.at(j)] && C[whiteverticesNonAdjacentAorB.at(k)][blackRBS.at(i)]) {
-                    numi++;
-                    numj++;
 					
-                    whiteInWings.push_back(whiteverticesNonAdjacentAorB.at(k));
-                    vector<int> tempWing;
-                    tempWing.push_back(blackRBS.at(i));
-                    tempWing.push_back(blackRBS.at(j));
-                    sort(tempWing.begin(), tempWing.end());
-                    enumerateWings.push_back(tempWing);
-                    tempWing.clear();
-					// the break statement here stops the search for other white vertices in the wing
-					// if you want to add those, need to make whiteInWings type vector< vector<int> >
-                    break;//as long as the set = wing is nonempty then we know a particular vertex is part of a wing
+					if (!wingAdded) {
+						numi++;
+						numj++;
+						vector<int> tempWing;
+						tempWing.push_back(blackRBS.at(i));
+						tempWing.push_back(blackRBS.at(j));
+						sort(tempWing.begin(), tempWing.end());
+						enumerateWings.push_back(tempWing);
+						tempWing.clear();
+						wingAdded = true;
+					}
+
+					tempWhites.push_back(whiteverticesNonAdjacentAorB.at(k));
+
+                    // whiteInWings.push_back(whiteverticesNonAdjacentAorB.at(k));
+                    // vector<int> tempWing;
+                    // tempWing.push_back(blackRBS.at(i));
+                    // tempWing.push_back(blackRBS.at(j));
+                    // sort(tempWing.begin(), tempWing.end());
+                    // enumerateWings.push_back(tempWing);
+                    // tempWing.clear();
+					// // the break statement here stops the search for other white vertices in the wing
+					// // if you want to add those, need to make whiteInWings type vector< vector<int> >
+                    // break;//as long as the set = wing is nonempty then we know a particular vertex is part of a wing
     
                 }
-                
-              
             }
+			if (wingAdded) {
+				whiteInWingsAll.push_back(tempWhites);
+				tempWhites.clear();
+			}
+
             numWings.at(j) = numj;
         }
-        
+
         numWings.at(i) = numi;
     }
     
-    // for (int i = 0; i < blackSingleRBS.size(); i++) {
-    //     int numi = numWings.at(i);
-    //     for (int j = 0; j < blackPairsRBS.size(); j++) {
-            
-    //         int numj = numWings.at(blackSingleRBS.size() + j);
-    //         for (int k = 0; k < whiteverticesNonAdjacentAorB.size(); k++) {
-    //             if (C[whiteverticesNonAdjacentAorB.at(k)][blackSingleRBS.at(j)] && (C[whiteverticesNonAdjacentAorB.at(k)][blackPairsRBS[j].at(0)] || C[whiteverticesNonAdjacentAorB.at(k)][blackPairsRBS[j].at(1)])) {
-    //                 numi++;
-    //                 numj++;
-	// 				whiteInWings.push_back(whiteverticesNonAdjacentAorB.at(k));
-    //                 vector<int> tempWing1;
-    //                 tempWing1.push_back(blackSingleRBS.at(i));
-    //                 sort(blackPairsRBS[j].begin(), blackPairsRBS[j].end());
-    //                 tempWing1.push_back(blackPairsRBS[j].at(0));
-    //                 tempWing1.push_back(blackPairsRBS[j].at(1));
-    //                 enumerateWings.push_back(tempWing1);
-    //                 tempWing1.clear();
-                    
-                    
-                    
-    //                 break;//as long as the set = wing is nonempty then we know a particular vertex is part of a wing
-    //             }
-    //         }
-    //         numWings.at(blackSingleRBS.size() + j) = numj;
-    //     }
-        
-    //     numWings.at(i) = numi;
-    // }
-    
-    
-    // for (int i = 0; i < blackPairsRBS.size(); i++) {
-    //     int numi = numWings.at(blackSingleRBS.size() + i);
-	// 	sort(blackPairsRBS[i].begin(), blackPairsRBS[i].end());
-    //     for (int j = i+1; j < blackPairsRBS.size(); j++) {
-            
-    //         int numj = numWings.at(blackSingleRBS.size() + j);
-    //         for (int k = 0; k < whiteverticesNonAdjacentAorB.size(); k++) {
-    //             if ((C[whiteverticesNonAdjacentAorB.at(k)][blackPairsRBS[i].at(0)] || C[whiteverticesNonAdjacentAorB.at(k)][blackPairsRBS[i].at(1)]) && (C[whiteverticesNonAdjacentAorB.at(k)][blackPairsRBS[j].at(0)] || C[whiteverticesNonAdjacentAorB.at(k)][blackPairsRBS[j].at(1)])) {
-    //                 numi++;
-    //                 numj++;
-					
-	// 				whiteInWings.push_back(whiteverticesNonAdjacentAorB.at(k));
-    //                 vector<int> tempWing2;
-                    
-	// 				sort(blackPairsRBS[j].begin(), blackPairsRBS[j].end());
-    //                 tempWing2.push_back(blackPairsRBS[i].at(0));
-    //                 tempWing2.push_back(blackPairsRBS[i].at(1));
-    //                 tempWing2.push_back(blackPairsRBS[j].at(0));
-    //                 tempWing2.push_back(blackPairsRBS[j].at(1));
-    //                 enumerateWings.push_back(tempWing2);
-    //                 tempWing2.clear();
-    //                 break;//as long as the set = wing is nonempty then we know a particular vertex is part of a wing
-    //             }
-    //         }
-    //         numWings.at(blackSingleRBS.size() + j) = numj;
-    //     }
-        
-    //     numWings.at(blackSingleRBS.size() + i)= numi;
-    // }
     
 	// Does this sorting affect the index correspondence of enumerateWings and whiteInWings?
-	// Below, for a white vertex adjacent to a black vertex, find() is used to find it in whiteInWings
-	sort(enumerateWings.begin(), enumerateWings.end());
-	sort(whiteInWings.begin(), whiteInWings.end());
-	vector<int>::iterator itWiW;
-	itWiW = unique( whiteInWings.begin(), whiteInWings.end());
-	whiteInWings.resize( std::distance(whiteInWings.begin(),itWiW)); // gets rid of repeats
-	// Are repeats possible? I don't think so because that would mean a bounded vertex is in two
-	// wings and that can't happen because the graph is claw-free. Can keep anyways, shouldn't alter whiteInWings
-	
+	// Later, for a white vertex adjacent to a black vertex, find() is used to find it in whiteInWings
+	// sort(enumerateWings.begin(), enumerateWings.end());
+	// sort(whiteInWings.begin(), whiteInWings.end());
+
+	// Only sort white vertices within each wing
+	for (int i = 0; i < whiteInWingsAll.size(); i++) {
+		sort(whiteInWingsAll[i].begin(), whiteInWingsAll[i].end());
+	}
 	
     //cout<<"***************************************************************"<<endl;
     //PrintVector(numWings);
     
 	//Regular I: Vertices xa and xb
-		//Stored as freeVertexA and freeVertexB
-		//Make sure you don't count this in black pairs; I'm guessing they may also be classified as regularII or irregular
+		//Stored as xa and xb
     //Regular II: A black vertex adjacent to 3 or more wings
-    vector<int> regularII; //vector< vector<int> > regularIIPairs;
+    vector<int> regularII;
     //Irregular: Adjacent to exactly 2 wings
-    vector<int> irregular; //vector< vector<int> > irregularPairs; int irregularPairsSize =0;
+    vector<int> irregular;
 	//useless otherwise
+	vector<int> useless;
 	
     for (int i = 0; i < blackRBS.size(); i++) {
-		//if blackRBS.at(i) == xa || blackRBS.at(i) == xb { //more efficient
-		// 	continue;
-		// }
-        if (numWings.at(i) > 2 && blackRBS.at(i) != xa && blackRBS.at(i) != xb) { // was 3 for some reason
-			//cout << "regular"<<endl;
+		if (blackRBS.at(i) == xa || blackRBS.at(i) == xb) {
+			continue;
+		}
+        if (numWings.at(i) > 2) {
             regularII.push_back(blackRBS.at(i));
+			//cout << "regularII"<< blackRBS.at(i)<<endl;
         }
-        if (numWings.at(i) == 2 && blackRBS.at(i) != xa && blackRBS.at(i) != xb) {
-			//cout << "irregular"<<endl;
+        if (numWings.at(i) == 2) {
             irregular.push_back(blackRBS.at(i));
+			//cout << "irregular"<< blackRBS.at(i)<<endl;
         }
-        
-        //A useless vertex along with all adjoining white vertices can be deleted from blackRBS
-		//Not sure why. Keep in code for now
-		//I think it's fine since blackVertices still contains all the black vertices
-		//whiteRBS still contains all white vertices in the RBS, including A and B
-        if (numWings.at(i) < 2 && blackRBS.at(i) != xa && blackRBS.at(i) != xb) {
+
+        // A useless vertex along with all adjoining white vertices can be deleted from blackRBS
+		// as they will not appear any WAP between a and b.
+		// I think it's fine since blackVertices still contains all the black vertices and
+		// whiteRBS still contains all white vertices in the RBS, including A and B.
+		
+		// Actually, when doing so, other black vertices may then be misclassified.
+        // Eg, You remove black vertex j. Black vertex i was irregular but is now useless, and it'll remain
+        // irregular if it was already classified.
+        // Best to just not remove them for now, but label as useless.
+        if (numWings.at(i) == 1) {
+			useless.push_back(blackRBS.at(i));
+			//cout << "useless"<< blackRBS.at(i)<<endl;
+		}
+		//If not adjacent to any wings, remove it from blackRBS
+		if (numWings.at(i) == 0) {
+			blackRBS.erase(blackRBS.begin() + i);
+			numWings.erase(numWings.begin() + i);
+			i--;
+		}
             
-            for (int j = 0; j < whiteverticesNonAdjacentAorB.size(); j++) {
-                if (C[blackRBS.at(i)][whiteverticesNonAdjacentAorB.at(j)]) {
+		// if (numWings.at(i) < 2) {
+		// 	useless.push_back(blackRBS.at(i));
+		// 	//cout << "useless"<< blackRBS.at(i)<<endl;
+
+			// //If you want to remove all useless vertices and their adjacent white vertices
+            // for (int j = 0; j < whiteverticesNonAdjacentAorB.size(); j++) {
+            //     if (C[blackRBS.at(i)][whiteverticesNonAdjacentAorB.at(j)]) {
 				
-					vector<int>::iterator itw;
-					itw = find (whiteInWings.begin(), whiteInWings.end(), whiteverticesNonAdjacentAorB.at(j));
+			// 		vector<int>::iterator itw;
+			// 		itw = find(whiteInWings.begin(), whiteInWings.end(), whiteverticesNonAdjacentAorB.at(j));
             
-					if (itw != whiteInWings.end()) { // ie, if white vertex "j" is in whiteInWings
-						whiteInWings.erase(itw);
-					}
+			// 		if (itw != whiteInWings.end()) { // ie, if white vertex "j" is in whiteInWings
+			// 			whiteInWings.erase(itw);
+			// 		}
 					
-					whiteverticesNonAdjacentAorB.erase(whiteverticesNonAdjacentAorB.begin() + j);
-                    j--;
+			// 		whiteverticesNonAdjacentAorB.erase(whiteverticesNonAdjacentAorB.begin() + j);
+            //         j--;
 	
-                }
-            }
-            blackRBS.erase(blackRBS.begin() + i);
-            numWings.erase(numWings.begin() + i);
-            i--;
-        }
+            //     }
+            // }
+            // blackRBS.erase(blackRBS.begin() + i);
+            // numWings.erase(numWings.begin() + i);
+            // i--;
+        // }
     }
     
-    // int bsp = blackSingleRBS.size() + blackPairsRBS.size();
-    // for (int i = blackSingleRBS.size(); i < bsp; i++) {
-        
-    //     if (numWings.at(i) > 3) {
-	// 		cout << "regular pair"<<endl;
-    //         regularIIPairs.push_back(blackPairsRBS[i - blackSingleRBS.size()]);
-            
-    //     }
-    //     if (numWings.at(i) == 2) {
-	// 		cout << "irregular pair"<<endl;
-    //         irregularPairs.push_back(blackPairsRBS[i - blackSingleRBS.size()]);
-	// 		irregularPairsSize++;
-    //     }
-        
-    //     //A useless object along with all adjoining white vertices can be deleted
-    //     // don't include them
-    //     if (numWings.at(i) <2) {
-            
-    //         for (int j = 0; j < whiteverticesNonAdjacentAorB.size(); j++) {
-    //             if (C[blackPairsRBS[i - blackSingleRBS.size()].at(0)][whiteverticesNonAdjacentAorB.at(j)] || C[blackPairsRBS[i - blackSingleRBS.size()].at(1)][whiteverticesNonAdjacentAorB.at(j)]) {
-    //                 vector<int>::iterator itw2;
-	// 				itw2 = find (whiteInWings.begin(), whiteInWings.end(), whiteverticesNonAdjacentAorB.at(j));
-            
-	// 				if (itw2 != whiteInWings.end()) {
-	// 					whiteInWings.erase(itw2);
-	// 				}
-	
-	// 				whiteverticesNonAdjacentAorB.erase(whiteverticesNonAdjacentAorB.begin() + j);
-    //                 j--;
-    //             }
-    //         }
-            
-    //         //just keep them empty here, then you don't have to decrease i, change this to remove it for real 10.15.14
-    //         blackPairsRBS[i - blackSingleRBS.size()].clear();
-    //         blackPairsRBS.erase(blackPairsRBS.begin() + i - blackSingleRBS.size());
-    //         i--;
-    //     }
-       
-    // }
     
-    //NEW  white RBS whiteverticesNonAdjacentAorB U freevertexA U freeVertexB instead of white RBS
-	// Create this new updated whiteRBS?
+    //whiteRBS becomes whiteverticesNonAdjacentAorB U freevertexA U freeVertexB
+	//To update whiteRBS
+	// whiteRBS.clear();
+	// whiteRBS.resize(whiteverticesNonAdjacentAorB.size(), '\0');
+    // copy(whiteverticesNonAdjacentAorB.begin(), whiteverticesNonAdjacentAorB.end(), whiteRBS.begin());
+    // whiteRBS.push_back(freeVertexA);
+    // whiteRBS.push_back(freeVertexB);
+
     //N1(xa) = freevertexA and N1(xb) = freevertexB
-    // For each regular I vertex, put the free vertex into one class and the rest of its neighbors into the other class
+    //For each regular I vertex, put the free vertex into one class and the rest of its neighbors into the other class
     vector<int> n2xa;
     vector<int> n2xb;
     for(int i = 0 ; i < whiteverticesNonAdjacentAorB.size(); i++) {
-		
-		//vector<int> tempw;
-		//tempw.push_back(whiteverticesNonAdjacentAorB.at(i));
-        // if (xa.size() == 2) {
-			
-		// 	if (adjacent(xa, tempw)){
-		// 		//cout<<"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"<<endl;
-		// 		n2xa.push_back(whiteverticesNonAdjacentAorB.at(i));
-		// 		//PrintVector(n2xa);
-		// 	}
-        // }
-		
-		// if (xb.size() == 2) {
-		// 	//cout<<"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"<<endl;
-		// 	if (adjacent(xb, tempw))n2xb.push_back(whiteverticesNonAdjacentAorB.at(i));
-    
-        // }
-		
-		//tempw.clear();
-        //if (xa.size() == 1) {
+
         if (C[xa][whiteverticesNonAdjacentAorB.at(i)]) {
 			n2xa.push_back(whiteverticesNonAdjacentAorB.at(i));    
         }
-		//if (xb.size() == 1) {
+		
         if (C[xb][whiteverticesNonAdjacentAorB.at(i)]) {
 			n2xb.push_back(whiteverticesNonAdjacentAorB.at(i));  
         }
 		
     }
     
-    
-    //For any regularII black vertex v or pair {v,w}, get the neighborhood of v or {v,w}
-    //int regIIsP = regularII.size() + regularIIPairs.size();
-    //vector< vector<int> > neighborsV; //These are the neighbors of regularII vertices and pairs
-	vector< vector<int> > neighborsV; //These are the neighbors of regularII vertices
+	//Store the neighbors of each regularII vertex
+	vector< vector<int> > neighborsV;
     vector<int> tempRegII;
-
-    for (int i = 0;  i < regularII.size(); i++) {
-        
-        //if (i < regularII.size()) {
-            
+    for (int i = 0;  i < regularII.size(); i++) {    
 		for (int j = 0; j < whiteverticesNonAdjacentAorB.size(); j++) {
 			if (C[regularII.at(i)][whiteverticesNonAdjacentAorB.at(j)]) {
 				tempRegII.push_back(whiteverticesNonAdjacentAorB.at(j));
@@ -1630,21 +1434,6 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 		
 		neighborsV.push_back(tempRegII); //neigborsV.at(i) then contains a vector of neighbors of regularII node i, which may empty
 		tempRegII.clear();
-           
-        //}
-        // else{
-            
-        //     for (int j = 0; j < whiteverticesNonAdjacentAorB.size(); j++) {
-        //         if (C[regularIIPairs[i - regularII.size()].at(0)][whiteverticesNonAdjacentAorB.at(j)] || C[regularIIPairs[i - regularII.size()].at(1)][whiteverticesNonAdjacentAorB.at(j)]) {
-        //             tempRegII.push_back(whiteverticesNonAdjacentAorB.at(j));
-        //         }
-        //     }
-            
-        //     neighborsV.push_back(tempRegII);
-        //     tempRegII.clear();
-            
-        // }
-        
     }
 	
     
@@ -1652,80 +1441,31 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 	adjacent to v, x is not adjacent to y if and only if one of x and y is N1(v) and the other is in N2(v) */
     //Now we want to find all the pairs x and y in N(v) that belong to distinct wings
 
-    /* 1. We already enumerated the wings (put the tip - ie, black vertices - of the wings on enumeratedWings and the size gives the number of (possible) wings)
-       2. Save in which wing each neighbor is contained */
+    /* 1. We already enumerated the wings (put the tip - ie, black vertices - of the wings on enumeratedWings and the size gives the number of distinct wings)
+       2. Save in which wing each white vertex (excluding a and b) is contained */
     
-	vector< vector <int> > whichWings(whiteverticesNonAdjacentAorB.size(),vector<int> (0));//gives index of the wing in enumeratedWings for vertex in whiteverticesNonAdjacentAorB
-	// whichWings could perhaps be vector<int> since each white vertex should only be in one wing; would require lots of edits
+	vector< vector <int> > whichWings(whiteverticesNonAdjacentAorB.size(), vector<int> (0)); //the 0 means empty
+	//Gives index of the wing in enumeratedWings for which each vertex in whiteverticesNonAdjacentAorB belongs to
+	//whichWings could perhaps be vector<int> since each white vertex should only be in one wing; would require lots of edits later
 	
     for (int i = 0;  i < enumerateWings.size(); i++) {
+        int enum0 = enumerateWings[i].at(0);
+        int enum1 = enumerateWings[i].at(1);
         
-        int enum1; //vector<int> enum1;
-        int enum0; //vector<int> enum0;
-        
-		// all should be size 2
-        //if (enumerateWings[i].size() == 2) {
-        enum0 = enumerateWings[i].at(0); //enum0.push_back(enumerateWings[i].at(0));
-        enum1 = enumerateWings[i].at(1); //enum1.push_back(enumerateWings[i].at(1));
-			
-        //}
-        
-        // if (enumerateWings[i].size() == 3) {
-        //     enum0.push_back(enumerateWings[i].at(0));
-        //     enum1.push_back(enumerateWings[i].at(1));
-        //     enum1.push_back(enumerateWings[i].at(2));
-            
-        // }
-        
-        // if (enumerateWings[i].size() == 4) {
-        //     enum0.push_back(enumerateWings[i].at(0));
-        //     enum0.push_back(enumerateWings[i].at(1));
-        //     enum1.push_back(enumerateWings[i].at(2));
-        //     enum1.push_back(enumerateWings[i].at(3));
-
-        // }
-        
-        //if (enum1.size() == 1 && enum0.size() == 1) {
 		for (int j = 0; j < whiteverticesNonAdjacentAorB.size(); j++) {
-			//if (C[whiteverticesNonAdjacentAorB.at(j)][enum0.at(0)] && C[whiteverticesNonAdjacentAorB.at(j)][enum1.at(0)]) {
 			if (C[whiteverticesNonAdjacentAorB.at(j)][enum0] && C[whiteverticesNonAdjacentAorB.at(j)][enum1]) {
-	
 				whichWings[j].push_back(i); //each white vertex (excluding A and B) will be in one wing
-
 			}
 			
 		}
-            
-        //}
-        
-        // if (enum1.size() == 2 && enum0.size() == 1) {
-        //     for (int j = 0; j < whiteverticesNonAdjacentAorB.size(); i++) {
-        //         if (C[whiteverticesNonAdjacentAorB.at(j)][enum0.at(0)] &&
-        //             (C[whiteverticesNonAdjacentAorB.at(j)][enum1.at(0)] || C[whiteverticesNonAdjacentAorB.at(j)][enum1.at(1)])) {
-        //             whichWings[j].push_back(i);
-        //         }
-        //     }
- 
-        // }
-    
-        // if (enum1.size() == 2 && enum0.size() == 2) {
-	
-        //     for (int j = 0; j < whiteverticesNonAdjacentAorB.size(); i++) {
-        //         if ((C[whiteverticesNonAdjacentAorB.at(j)][enum0.at(0)] || C[whiteverticesNonAdjacentAorB.at(j)][enum0.at(1)]) && (C[whiteverticesNonAdjacentAorB.at(j)][enum1.at(0)] || C[whiteverticesNonAdjacentAorB.at(j)][enum1.at(1)])) {
-        //             whichWings[j].push_back(i);
-        //         }
-        //     }
-			
-        // }
-	  
     }
-    
-    //3. sort the vector you created in (2)
-    //comment on 1/15
-	// Not needed anymore as there will only be one entry in whichWings[i] for all i
-	// for (int i = 0; i < whichWings.size(); i++) {
-    //     sort(whichWings[i].begin(), whichWings[i].end());
-    // }
+
+	/*//White vertices should be in exactly one wing
+	for (int i=0; i < whichWings.size(); i++) {
+		if (whichWings[i].size() != 1) {
+			cout << "whiterverticesNonAdjacentAorB vertex" << i << "is in" << whichWings[i].size() << "wings." << endl;
+		}
+	} */
 	
 	/*cout << "whiteverticesNonAdjacentAorB size:"<< whiteverticesNonAdjacentAorB.size()<<endl;
 	cout << "SECOND TIME whichWingsSssssssssssssssssssssssssssssssss"<<endl;
@@ -1738,21 +1478,15 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 	}*/
 	
 	
-    //4. Use symmetric difference and myvector.find() to see if two of the neighbor vertices, x and y, are in different wings
-    //vector< vector<int> > nv1(regIIsP,vector<int> (0));
-    //vector< vector<int> > nv2(regIIsP,vector<int> (0));
-	vector< vector<int> > nv1(regularII.size(),vector<int> (0));
-    vector< vector<int> > nv2(regularII.size(),vector<int> (0));
+    //4. Determine if two neighbor vertices, x and y, are in different wings and assign them to a class accordingly
+	vector< vector<int> > nv1(regularII.size(), vector<int> (0));
+    vector< vector<int> > nv2(regularII.size(), vector<int> (0));
 
     for (int i = 0;  i < neighborsV.size(); i++) {
-        
+
         for (int j = 0 ; j < neighborsV[i].size(); j++) {
             for (int k = j+1; k < neighborsV[i].size(); k++){
 			
-				vector<int>::iterator it;
-				vector<int> symmDiffWing(enumerateWings.size());                  // 0  0  0 ... 0 (enumerateWings.size() of them)
-                
-                
                 int x = -1;
                 int y = -1;
                 for (int l = 0; l < whiteverticesNonAdjacentAorB.size(); l++) {
@@ -1760,7 +1494,6 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
                         x = l;  // there is a 1-1 correspondence between whichWings and whiteverticeNonAdjacentAorB
 				                // x is an index
 					}
-					
 					
                     if (neighborsV[i].at(k) == whiteverticesNonAdjacentAorB.at(l)) {
                         y = l; // y is an index
@@ -1774,32 +1507,29 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 				
 				
 				if (x!=-1 && y != -1) {
-					//Recall whichWings[i] contains indices to the wings that whiteverticesNonAdjacentAorB.at(i) belongs to
-				
-					it=std::set_symmetric_difference (whichWings[x].begin(),whichWings[x].end(), whichWings[y].begin(),whichWings[y].end(), symmDiffWing.begin());
+					// //Recall whichWings[i] contains the index to the wing that whiteverticesNonAdjacentAorB.at(i) belongs to
+					// //Don't need to sort first because they should only contain one element
+					// vector<int>::iterator it;
+					// vector<int> symmDiffWing(enumerateWings.size()); // 0  0  0 ... 0 (enumerateWings.size() of them)
+					// it=std::set_symmetric_difference(whichWings[x].begin(), whichWings[x].end(), whichWings[y].begin(), whichWings[y].end(), symmDiffWing.begin());
 					
+					// symmDiffWing.resize(it-symmDiffWing.begin());
+					// //symmDiffWing should contain the indices of the wings that x and y are in, excluding those they're both in
 					
-					//  whitevertices ... 0  0  0  0 <-- comment probaly from copying and pasting code
-					symmDiffWing.resize(it-symmDiffWing.begin());//only white vertices <-- same; should just resize the vector
-					//symmDiffWing should contain the indices of the wings that x and y are in, except those they're both in
+					// //cout << "symDiff2:"<<endl;
+					// //PrintVector(symmDiffWing);
 					
-					//cout << "symDiff2:"<<endl;
-					//PrintVector(symmDiffWing);
+					// int ww = whichWings[x].size() + whichWings[y].size();
+
 					
-					int ww = whichWings[x].size() + whichWings[y].size();
-					
-					if (symmDiffWing.size() == ww) { // means x and y are not in any mutual wings
-						//Check if they are adjacent
+					//Recall whichWings[i] contains the index to the wing that whiteverticesNonAdjacentAorB.at(i) belongs to
+					// if (symmDiffWing.size() == ww) { // means x and y are not in any mutual wings
+					if (whichWings[x].at(0) != whichWings[y].at(0)) {
+						//x and y are in different wings
 						if (!C[whiteverticesNonAdjacentAorB.at(x)][whiteverticesNonAdjacentAorB.at(y)]) {
 							//x and y are nonadjacent
 
-							// Original code
-							// bool inNv1x = find(nv1[i].begin(), nv1[i].end(), whiteverticesNonAdjacentAorB.at(x) ) == nv1[i].end();
-							// bool inNv2x = find(nv2[i].begin(), nv2[i].end(), whiteverticesNonAdjacentAorB.at(x) ) == nv2[i].end();
-							
-							// bool inNv1y = find(nv1[i].begin(), nv1[i].end(), whiteverticesNonAdjacentAorB.at(y) ) == nv1[i].end();
-							// bool inNv2y = find(nv2[i].begin(), nv2[i].end(), whiteverticesNonAdjacentAorB.at(y) ) == nv2[i].end();
-							
+							// Original code had == instead of !=
 							bool inNv1x = find(nv1[i].begin(), nv1[i].end(), whiteverticesNonAdjacentAorB.at(x) ) != nv1[i].end();
 							bool inNv2x = find(nv2[i].begin(), nv2[i].end(), whiteverticesNonAdjacentAorB.at(x) ) != nv2[i].end();
 							
@@ -1809,30 +1539,23 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 							//Case 1. if whiteverticesNonAdjacentAorB.at(x) is n1v or n2v 
 							// and whiteverticesNonAdjacentAorB.at(y) is not in the other
 							if (inNv1x && !inNv2y) {
-								
 								nv2[i].push_back(whiteverticesNonAdjacentAorB.at(y));
-								
 							}
 							
 							if (inNv2x && !inNv1y) {
-								
 								nv1[i].push_back(whiteverticesNonAdjacentAorB.at(y));
-								
 							}
 							
 							//Case 2. if whiteverticesNonAdjacentAorB.at(y) is n1v or n2v 
 							//and whiteverticesNonAdjacentAorB.at(x) is not in the other
 							if (inNv1y && !inNv2x) {
-								
 								nv2[i].push_back(whiteverticesNonAdjacentAorB.at(x));
-								
 							}
 							
 							if (inNv2y && !inNv1x) {
-								
 								nv1[i].push_back(whiteverticesNonAdjacentAorB.at(x));
-								
 							}
+
 							//Case 3. If neither whiteverticesNonAdjacentAorB.at(x) 
 							// or whiteverticesNonAdjacentAorB.at(y) are in n1v or n2v
 							if (!inNv1x && !inNv2x && !inNv1y && !inNv2y ) {
@@ -1841,14 +1564,8 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 							}
                         }
 						else{
-						
-							// if they are adjacent they go in the same set of neighbors (eg, N1(v) or N2(v))
-							// bool inNv1x2 = find(nv1[i].begin(), nv1[i].end(), whiteverticesNonAdjacentAorB.at(x)) == nv1[i].end();
-							// bool inNv2x2 = find(nv2[i].begin(), nv2[i].end(), whiteverticesNonAdjacentAorB.at(x)) == nv2[i].end();
-							
-							// bool inNv1y2 = find(nv1[i].begin(), nv1[i].end(), whiteverticesNonAdjacentAorB.at(y)) == nv1[i].end();
-							// bool inNv2y2 = find(nv2[i].begin(), nv2[i].end(), whiteverticesNonAdjacentAorB.at(y)) == nv2[i].end();
-
+							//x and y are adjacent, so they go in the same set of neighbors (eg, N1(v) or N2(v))
+							// Original code had == instead of !=
 							bool inNv1x2 = find(nv1[i].begin(), nv1[i].end(), whiteverticesNonAdjacentAorB.at(x) ) != nv1[i].end();
 							bool inNv2x2 = find(nv2[i].begin(), nv2[i].end(), whiteverticesNonAdjacentAorB.at(x) ) != nv2[i].end();
 							
@@ -1858,30 +1575,23 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 							//Case 1. if whiteverticesNonAdjacentAorB.at(x) is n1v or n2v 
 							// and whiteverticesNonAdjacentAorB.at(y) is not in the other
 							if (inNv1x2 && !inNv2y2) {
-								
 								nv1[i].push_back(whiteverticesNonAdjacentAorB.at(y));
-								
 							}
 							
 							if (inNv2x2 && !inNv1y2) {
-								
 								nv2[i].push_back(whiteverticesNonAdjacentAorB.at(y));
-								
 							}
 							
 							//Case 2. if whiteverticesNonAdjacentAorB.at(y) is n1v or n2v 
 							//and whiteverticesNonAdjacentAorB.at(x) is not in the other
 							if (inNv1y2 && !inNv2x2) {
-								
 								nv1[i].push_back(whiteverticesNonAdjacentAorB.at(x));
-								
 							}
 							
 							if (inNv2y2 && !inNv1x2) {
-								
 								nv2[i].push_back(whiteverticesNonAdjacentAorB.at(x));
-								
 							}
+
 							//Case 3. If neither whiteverticesNonAdjacentAorB.at(x) 
 							// or whiteverticesNonAdjacentAorB.at(y) are in n1v or n2v
 							if (!inNv1x2 && !inNv2x2 && !inNv1y2 && !inNv2y2 ) {
@@ -1889,19 +1599,14 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 								nv1[i].push_back(whiteverticesNonAdjacentAorB.at(y));
 							}
 							
-							
 						}
-						//comment 1/30
+						
 					}
 					// I don't think the following is true; it doesn't hold for the example in the Minty paper
 					// else{
 					// 	//5. if they are in the same wing they can be in the same group of neighbors
-					// 	// bool inNv1x3 = find(nv1[i].begin(), nv1[i].end(), whiteverticesNonAdjacentAorB.at(x)) == nv1[i].end();
-					// 	// bool inNv2x3 = find(nv2[i].begin(), nv2[i].end(), whiteverticesNonAdjacentAorB.at(x)) == nv2[i].end();
-						
-					// 	// bool inNv1y3 = find(nv1[i].begin(), nv1[i].end(), whiteverticesNonAdjacentAorB.at(y)) == nv1[i].end();
-					// 	// bool inNv2y3 = find(nv2[i].begin(), nv2[i].end(), whiteverticesNonAdjacentAorB.at(y)) == nv2[i].end();
-
+					
+					//  // Original code had == instead of !=
 					// 	bool inNv1x3 = find(nv1[i].begin(), nv1[i].end(), whiteverticesNonAdjacentAorB.at(x)) != nv1[i].end();
 					// 	bool inNv2x3 = find(nv2[i].begin(), nv2[i].end(), whiteverticesNonAdjacentAorB.at(x)) != nv2[i].end();
 						
@@ -1911,30 +1616,23 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 					// 	//Case 1. if whiteverticesNonAdjacentAorB.at(x) is n1v or n2v 
 					// 	// and whiteverticesNonAdjacentAorB.at(y) is not in the other
 					// 	if (inNv1x3 && !inNv2y3) {
-							
 					// 		nv1[i].push_back(whiteverticesNonAdjacentAorB.at(y));
-							
 					// 	}
 						
 					// 	if (inNv2x3 && !inNv1y3) {
-							
 					// 		nv2[i].push_back(whiteverticesNonAdjacentAorB.at(y));
-							
-					// // 	}
+					// 	}
 						
 					// 	//Case 2. if whiteverticesNonAdjacentAorB.at(y) is n1v or n2v 
 					// 	//and whiteverticesNonAdjacentAorB.at(x) is not in the other
 					// 	if (inNv1y3 && !inNv2x3) {
-							
 					// 		nv1[i].push_back(whiteverticesNonAdjacentAorB.at(x));
-							
 					// 	}
 						
 					// 	if (inNv2y3 && !inNv1x3) {
-							
 					// 		nv2[i].push_back(whiteverticesNonAdjacentAorB.at(x));
-							
-					// // 	}
+					// 	}
+
 					// 	//Case 3. If neither whiteverticesNonAdjacentAorB.at(x) 
 					// 	// or whiteverticesNonAdjacentAorB.at(y) are in n1v or n2v
 					// 	if (!inNv1x3 && !inNv2x3 && !inNv1y3 && !inNv2y3 ) {
@@ -1949,105 +1647,88 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
             }
         }
     }
+
+	/*//Check it every vertex v is in exactly one class
+	for (int j=0; j < whiteverticesNonAdjacentAorB.size(); j++) {
+		int numClassesIn= 0;
+		for (int i=0; i < regularII.size(); i++) {
+			bool inN1 = false;
+			bool inN2 = false;
+			if (find(nv1[i].begin(), nv1[i].end(), whiteverticesNonAdjacentAorB.at(j)) != nv1[i].end()) {
+				numClassesIn++;
+				inN1 = true;
+			}
+			if (find(nv2[i].begin(), nv2[i].end(), whiteverticesNonAdjacentAorB.at(j)) != nv2[i].end()) {
+				numClassesIn++;
+				inN2 = true;
+			}
+			if (inN1 && in N2) {
+				cout << "White vertex" << j << "is in N1 and N2 classes for white vertex" << i << endl;
+			}
+		}
+
+		if (numClassesIn != 1) {
+			cout << "White vertex" << j << "is in" << numClassesIn << "classes." << endl;
+		}
+	}*/
+
+	/* Can also check if nv1(i).at(i) union nv2.at(i) equals neighborsV.at(i)*/
     
-	//cout << "rbs before correction:"<< regularII.size() + regularIIPairs.size() <<endl;
+	//cout << "rbs before correction:"<< regularII.size() <<endl;
     // A regularII vertex with an empty node class, together with all adjoining white vertices, may be deleted
 	// I'm guessing they never appear in a path
-	for (int i = 0; i < neighborsV.size(); i++) {
-        //vector<int> tempn1;
-        //vector<int> tempn2;
-        
-        // for (int j = 0; j < nv1[i].size(); j++) {
-        //     tempn1.push_back(nv1[i].at(j));
-        // }
-        
-        // for (int j = 0; j < nv2[i].size(); j++) {
-        //     tempn2.push_back(nv2[i].at(j));
-        // }
-        
-        //if (tempn1.size() == 0 || tempn2.size() == 0) {
-		if (nv1[i].size() == 0 || nv2[i].size() == 0) {
 
-            //if (i < regularII.size()) {
-            regularII.erase(regularII.begin() + i);
-                
-			for (int j = 0; j < whiteverticesNonAdjacentAorB.size(); j++) {
-				int du = whiteverticesNonAdjacentAorB.at(j);
-				
-				// bool inN = find(neighborsV[i].begin(), neighborsV[i].end(), du) == neighborsV[i].end();
-				bool inN = find(neighborsV[i].begin(), neighborsV[i].end(), du) != neighborsV[i].end();
-				//if (!inN) {
-				if (inN) { //if du is a neighbor of regularII node i	
-				
-					vector<int>::iterator itw3;
-					itw3 = find(whiteInWings.begin(), whiteInWings.end(), whiteverticesNonAdjacentAorB.at(j));
-		
-					if (itw3 != whiteInWings.end()) {
-						whiteInWings.erase(itw3);
-					}
-					whiteverticesNonAdjacentAorB.erase(whiteverticesNonAdjacentAorB.begin() + j);
-					j--;
-				}
-			}
-			
-			neighborsV.erase(neighborsV.begin() + i);
-			nv1.erase(nv1.begin() + i);
-			nv2.erase(nv2.begin() + i);
-			i--;
-            //}
-            // else{
-            //     regularIIPairs.erase(regularIIPairs.begin() + i);
-                
-            //     for (int j = 0; j < whiteverticesNonAdjacentAorB.size(); j++) {
-            //         int du2 = whiteverticesNonAdjacentAorB.at(j);
-                    
-            //         bool inN = find(neighborsV[i].begin(), neighborsV[i].end(), du2) == neighborsV[i].end();
-            //         if (!inN) {
-			// 			vector<int>::iterator itw4;
-			// 			itw4 = find (whiteInWings.begin(), whiteInWings.end(), whiteverticesNonAdjacentAorB.at(j));
+	//Going to not delete them for now as deleting them may mess up with the classification of black vertices
+	// for (int i = 0; i < neighborsV.size(); i++) {
+        
+	// 	if (nv1[i].size() == 0 || nv2[i].size() == 0) {
             
-			// 			if (itw4 != whiteInWings.end()) {
-			// 				whiteInWings.erase(itw4);
-			// 			}
-					
-					
-            //             whiteverticesNonAdjacentAorB.erase(whiteverticesNonAdjacentAorB.begin() + j);
-            //             j--;
-            //         }
-            //     }
-                
-            //     neighborsV.erase(neighborsV.begin() + i);
-            //     i--;
-            // }
-        }
-        
-        
-        
-        //tempn1.clear();
-        //tempn2.clear();
-        
-    }
-    
-    //cout << "regIIsP4: "<< regularII.size() + regularIIPairs.size()<<endl;
-    //Construction of the Edmonds' Graph
-	//Assume the RBS has N regular vertices (N = rbsN+2) for the two regular I vertices
+	// 		regularII.erase(regularII.begin() + i);
 
-	//The RBS has N regular II vertices and the two regular I vertices
-	int rbsN = regularII.size(); //+ regularIIPairs.size();
-	//N = 2*rbsN+2; // original code
-	N = rbsN+2; // should be this
-    //We form a graph with 2N+2 nodes and N black branches
-    // New graph store it in a vector of vectors in vertex vertex weight format
-    //The mapping is a pair entry(i)-> entries 2i and 2i+1 weight <--- ???
+	// 		for (int j = 0; j < whiteverticesNonAdjacentAorB.size(); j++) {
+				
+	// 			bool inN = find(neighborsV[i].begin(), neighborsV[i].end(), whiteverticesNonAdjacentAorB.at(j)) != neighborsV[i].end();
+	// 			if (inN) { //if white vertex j is a neighbor of regularII node i	
+	// 				//Would need to modify for whiteInWingsAll
+	// 				vector<int>::iterator itw3;
+	// 				itw3 = find(whiteInWings.begin(), whiteInWings.end(), whiteverticesNonAdjacentAorB.at(j));
+		
+	// 				if (itw3 != whiteInWings.end()) {
+	// 					whiteInWings.erase(itw3);
+	// 				}
+	// 				whiteverticesNonAdjacentAorB.erase(whiteverticesNonAdjacentAorB.begin() + j);
+	// 				j--;
+	// 			}
+	// 		}
+			
+	// 		neighborsV.erase(neighborsV.begin() + i);
+	// 		nv1.erase(nv1.begin() + i);
+	// 		nv2.erase(nv2.begin() + i);
+	// 		i--;
+	// 	}
+    // }
+
+	//cout << "regularII size:"<< regularII.size()<<endl;
+	// Update whiteRBS
+	// whiteRBS.clear();
+	// whiteRBS.resize(whiteverticesNonAdjacentAorB.size(), '\0');
+    // copy(whiteverticesNonAdjacentAorB.begin(), whiteverticesNonAdjacentAorB.end(), whiteRBS.begin());
+    // whiteRBS.push_back(freeVertexA);
+    // whiteRBS.push_back(freeVertexB);
+
+    
+	/***************** Construction of the Edmonds' Graph *****************/
+	
+	// R is the number of black vertices in the Edmonds graph
+	int R = regularII.size() + 2; // 2 for the regularI vertices
+	N = 2*R + 2; // number of vertices in the Edmonds graph (+2 for a^ and b^)
+	//cout << "R:  "<< R<<endl;
+    //We form a graph with 2R+2 vertices and R black branches
 	//Each inner vector corresponds to an edge and consists of vertex1InEdge, vertex2InEdge, weightOfEdge
 	vector< vector<int> > newGraphB;
 	
-	
 	//a^ and b^ will be nodes 0 and 1 respectively
 	//x_a^1, x_a^2 and x_b^1, x_b^2 will be 2,3,4,5
-	
-	
-	//cout << "rbsN: "<< rbsN <<endl;
 	
 	//These two are white edges (a, x_a^1), (b, x_b^1)
 	vector<int> tempR;
@@ -2073,78 +1754,70 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 	newGraphB.push_back(tempR);
 	tempR.clear();
 	
-	//cout << "reg II single size:" << regularII.size()<<endl;
-	//cout << "rbsN: "<< rbsN<<endl;
+	//cout << "regularII size:" << regularII.size()<<endl;
 	//These are black edges
-	for (int i = 3; i < rbsN+3; i++) {
-        //if (i < regularII.size()+3) { // rbsN = regularII.size()
+	for (int i = 0; i < regularII.size(); i++) {
 		vector<int> tempE;
-		tempE.push_back(2*i); //x_i^1 regularII vertex
-		tempE.push_back(2*i+1); //x_i^2 regularII vertex
-		tempE.push_back(weights.at(regularII.at(i-3)));
+		tempE.push_back(2*(i+3)); //x_i^1 regularII vertex
+		tempE.push_back(2*(i+3)+1); //x_i^2 regularII vertex
+		tempE.push_back(weights.at(regularII.at(i)));
 		newGraphB.push_back(tempE);
 		tempE.clear();
-            
-        //}
-        // else{
-        //     //This takes care of the contraction of black pairs
-        //     vector<int> tempE2;
-        //     tempE2.push_back(2*i);
-        //     tempE2.push_back(2*i+1);
-        //     int sum1 = regularIIPairs[i-3].at(0);
-        //     int sum2 = regularIIPairs[i-3].at(1);
-        //     int w = weights.at(sum1) + weights.at(sum2);
-        //     tempE2.push_back(w);
-        //     newGraphB.push_back(tempE2);
-        //     tempE2.clear();
-            
-        // }
     }
 
+	int numberOfEdgesEdmonds = R + 2; // regularII + 2 regularI + 2 white; will increase as white edges are added
 
-	//Add first the WHITE edges associated with regular I vertices; Note: (a,x_a^1) and (b,x_b^1) were added above
+	//Add first the edges associated with regular I vertices (Note: (a,x_a^1) and (b,x_b^1) were added above)
 	//N1(xa) = freeVertexA and N1(xb) = freeVertexB
     //For a regular vertex of the first kind put the free vertex into one class and the rest of its neighbors into the other class
-	//Here we only consider n2xa and n2xb, since there will not be IWAPS starting at xa or xb
-
-	//vector<bool> iwapBF(vector<int> &weight, vector<int> &whiteReachIrreg, vector<int> whiteSource, vector<int> whiteSinks, vector<int> whiteVerticesInWings, vector<int> irregularVertices);
-
-	//Add edge between xa^2 and xb^2
-	int numberOfEdgesEdmonds = N+2; // we've added N black edges and two white edges above (N = rbsN+2)
-	//int numberOfEdgesEdmonds = rbsN+2; // This will increase as white edges are added
+	//Here we only consider n2xa and n2xb, since there will not be IWAPS starting at x_a^1 or x_b^1
+	//iwapBF(vector<int> &weight, vector<int> &whiteReachIrreg, vector<int> whiteSource,
+		// vector<int> whiteSinks, vector<int> whiteVerticesInWings, vector<int> irregularVertices);
+	
+	//Add edges between xa^2 and xb^2
 	bool IWAP = false;
 	int maxW = 0;
 	vector<int> wxa;
 	vector<int> whiteReachI;
+	bool maxSet = false;
 	for (int i = 0; i < n2xa.size(); i++) {
 		vector<int> xaSource;
 		xaSource.push_back(n2xa.at(i));
-		vector<bool> IWAPBF = iwapBF(wxa, whiteReachI, xaSource, n2xb, whiteInWings, irregular);//, irregularPairs);
-		int counter = 0;
-		for (int j = 0; j < IWAPBF.size(); j++) {
-			if (IWAPBF.at(j)) {
-				IWAP = true;
-				// Only weights for IWAPs are stored
-				if (wxa.at(counter) > maxW) {
-					maxW = wxa.at(counter);
-					counter++;
-				}
+		vector<bool> IWAPBF = iwapBF(wxa, whiteReachI, xaSource, n2xb, whiteInWings, irregular);
+		// int counter = 0;
+		int tempMaxW;
+		if (wxa.size() > 0) {
+			IWAP = true;
+			tempMaxW = *max_element(wxa.begin(), wxa.end());
+			if (!maxSet) {
+				maxW = tempMaxW;
+				maxSet = true;
 			}
+			else if (tempMaxW > maxW) {
+				maxW = tempMaxW;
+			}
+			// for (int j = 0; j < IWAPBF.size(); j++) {
+			// 	if (IWAPBF.at(j)) {
+			// 		IWAP = true;
+			// 		// Only weights for IWAPs are stored
+			// 		if (wxa.at(counter) > maxW) {
+			// 			maxW = wxa.at(counter);
+			// 			counter++;
+			// 		}
+			// 	}
+			// }
 		}
 		
 		xaSource.clear();
 		wxa.clear();
 	}
-	// Shouldn't this IWAP be between x_a and x_b? Hence we push x_a^2 and x_b^2 (3 and 5)?
-	// What if all IWAPs have nonpositive weight?
+	
 	if (IWAP) {
 		vector<int> tempE3;
-		//Recall node A is 0 and node B is 1 
-		// tempE3.push_back(0);
-		// tempE3.push_back(1);
+		//Recall node x_a^2 is 3 and x_b^2 is 5 
 		tempE3.push_back(3);
 		tempE3.push_back(5);
-		tempE3.push_back(maxW);//if all weights are negative, this will push 0
+		tempE3.push_back(maxW);
 		newGraphB.push_back(tempE3);
 		numberOfEdgesEdmonds++;
 		tempE3.clear();
@@ -2152,38 +1825,48 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 		
 
 	// Add edges between x_a^2 and regularII nodes x_j
-	// First we add between x_a^2 and x_j^1
 	bool IWAP1 = false;
 	bool IWAP2 = false;
-	//int maxW1 = 0;
-	//int maxW2 = 0;
 	vector<int> wxa1, wxa2;
+	// First we add between x_a^2 and x_j^1
     for (int j = 0; j < nv1.size(); j++) {
 		int maxW1 = 0;
+		bool maxSet = false;
 		for (int i = 0; i < n2xa.size(); i++){
 			vector<int> xaaSource;
 			xaaSource.push_back(n2xa.at(i));
-			vector<bool> IWAPBF2 = iwapBF(wxa1,whiteReachI, xaaSource, nv1.at(j), whiteInWings, irregular);//, irregularPairs);
-			int counter1 = 0;
-			for (int k = 0; k < IWAPBF2.size(); k++) {
-				if (IWAPBF2.at(k)) {
-					IWAP1 = true;
-					
-					if (wxa1.at(counter1) > maxW1) {
-						maxW1 = wxa1.at(counter1);
-						counter1++;
-					}
+			vector<bool> IWAPBF2 = iwapBF(wxa1,whiteReachI, xaaSource, nv1.at(j), whiteInWings, irregular);
+			//int counter1 = 0;
+			int tempMaxW;
+			if (wxa1.size() > 0) {
+				IWAP1 = true;
+				tempMaxW = *max_element(wxa1.begin(), wxa1.end());
+				if (!maxSet) {
+					maxW1 = tempMaxW;
+					maxSet = true;
+				}
+				else if (tempMaxW > maxW1) {
+					maxW1 = tempMaxW;
 				}
 			}
+
+			// for (int k = 0; k < IWAPBF2.size(); k++) {
+			// 	if (IWAPBF2.at(k)) {
+			// 		IWAP1 = true;
+					
+			// 		if (wxa1.at(counter1) > maxW1) {
+			// 			maxW1 = wxa1.at(counter1);
+			// 			counter1++;
+			// 		}
+			// 	}
+			// }
 			xaaSource.clear();
 			wxa1.clear();
 		}
 
 		if (IWAP1) {
 			vector<int> tempE4;
-			//Recall node A is 0 and regular vertices xj with N1 are mapped to vertex 2j
-			//tempE4.push_back(0);
-			//Node x_a^2 is 3 and regular vertices xj with N1 are mapped to vertex 2j (+6)
+			//Recall node x_a^2 is 3 and regular vertices xj with N1 are mapped to vertex 2j (+6)
 			tempE4.push_back(3);
 			tempE4.push_back(2*(j+3));
 			tempE4.push_back(maxW1);
@@ -2197,29 +1880,41 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 	// Next we add edges between x_a^2 and x_j^2
 	for (int j = 0; j < nv2.size(); j++) {
 		int maxW2 = 0;
+		bool maxSet = false;
 		for (int i = 0; i < n2xa.size(); i++){
 			vector<int> xaaSource;
 			xaaSource.push_back(n2xa.at(i));
-			vector<bool> IWAPBF3 = iwapBF(wxa2, whiteReachI, xaaSource, nv2.at(j), whiteInWings, irregular);//, irregularPairs);
-			int counter2 = 0;
-			for (int k = 0; k < IWAPBF3.size(); k++) {
-				if (IWAPBF3.at(k)) {
-					IWAP2 = true;
-					
-					if (wxa2.at(counter2) > maxW2) {
-						maxW2 = wxa2.at(counter2);
-						counter2++;
-					}
+			vector<bool> IWAPBF3 = iwapBF(wxa2, whiteReachI, xaaSource, nv2.at(j), whiteInWings, irregular);
+			//int counter2 = 0;
+			int tempMaxW;
+			if (wxa2.size() > 0) {
+				IWAP2 = true;
+				tempMaxW = *max_element(wxa2.begin(), wxa2.end());
+				if (!maxSet) {
+					maxW2 = tempMaxW;
+					maxSet = true;
+				}
+				else if (tempMaxW > maxW2) {
+					maxW2 = tempMaxW;
 				}
 			}
+
+			// for (int k = 0; k < IWAPBF3.size(); k++) {
+			// 	if (IWAPBF3.at(k)) {
+			// 		IWAP2 = true;
+					
+			// 		if (wxa2.at(counter2) > maxW2) {
+			// 			maxW2 = wxa2.at(counter2);
+			// 			counter2++;
+			// 		}
+			// 	}
+			// }
 			xaaSource.clear();
 			wxa2.clear();
 		}
 
 		if (IWAP2) {
 			vector<int> tempE5;
-			//Recall node A is 0 and regular vertices xj with N2 are mapped to vertex 2j+1
-			//tempE5.push_back(0);
 			//Node x_a^2 is 3 and regular vertices xj with N2 are mapped to vertex 2j+1 (+6)
 			tempE5.push_back(3);
 			tempE5.push_back(2*(j+3)+1);
@@ -2233,37 +1928,47 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 
 	
 	// Add edges between x_b^2 and regularII nodes x_j
-	// Fire we add between x_b^2 and x_j^1
 	bool IWAP1b = false;
 	bool IWAP2b = false;
-	//int maxW1b = 0;
-	//int maxW2b = 0;
 	vector<int> wxb1, wxb2;
+	// First we add between x_b^2 and x_j^1
 	for (int j = 0; j < nv1.size(); j++) {
 		int maxW1b = 0;
+		bool maxSet = false;
     	for (int i = 0; i < n2xb.size(); i++) {
 			vector<int> xbSource;
 			xbSource.push_back(n2xb.at(i));
-			vector<bool> IWAPBF4 = iwapBF(wxb1,whiteReachI, xbSource, nv1.at(j), whiteInWings, irregular);//, irregularPairs);
-			int counter1 = 0;
-			for (int k = 0; k< IWAPBF4.size(); k++) {
-				if (IWAPBF4.at(k)) {
-					IWAP1b = true;
-					
-					if (wxb1.at(counter1) > maxW1b) {
-						maxW1b = wxb1.at(counter1);
-						counter1++;
-					}
+			vector<bool> IWAPBF4 = iwapBF(wxb1,whiteReachI, xbSource, nv1.at(j), whiteInWings, irregular);
+			//int counter1 = 0;
+			int tempMaxW;
+			if (wxb1.size() > 0) {
+				IWAP1b = true;
+				tempMaxW = *max_element(wxb1.begin(), wxb1.end());
+				if (!maxSet) {
+					maxW1b = tempMaxW;
+					maxSet = true;
+				}
+				else if (tempMaxW > maxW1b) {
+					maxW1b = tempMaxW;
 				}
 			}
+
+			// for (int k = 0; k< IWAPBF4.size(); k++) {
+			// 	if (IWAPBF4.at(k)) {
+			// 		IWAP1b = true;
+					
+			// 		if (wxb1.at(counter1) > maxW1b) {
+			// 			maxW1b = wxb1.at(counter1);
+			// 			counter1++;
+			// 		}
+			// 	}
+			// }
 			xbSource.clear();
 			wxb1.clear();
 		}
 
 		if (IWAP1b) {
 			vector<int> tempE6;
-			//Recall node B is 1 and regular vertices xj with N1 are mapped to vertex 2j
-			//tempE6.push_back(1);
 			//Recall node x_b^2 is 5 and regular vertices xj with N1 are mapped to vertex 2j (+6)
 			tempE6.push_back(5);
 			tempE6.push_back(2*(j+3));
@@ -2278,21 +1983,35 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 	// Next we add between x_b^2 and x_j^2
 	for (int j = 0; j < nv2.size(); j++) {
 		int maxW2b = 0;
+		bool maxSet = false;
 		for (int i = 0; i < n2xb.size(); i++){
 			vector<int> xbSource;
 			xbSource.push_back(n2xb.at(i));
-			vector<bool> IWAPBF5 = iwapBF(wxb2, whiteReachI, xbSource, nv2.at(j), whiteInWings, irregular);//, irregularPairs);
-			int counter2 = 0;
-			for (int k = 0; k < IWAPBF5.size(); k++) {
-				if (IWAPBF5.at(k)) {
-					IWAP2b = true;
-					
-					if (wxb2.at(counter2) > maxW2b) {
-						maxW2b = wxb2.at(counter2);
-						counter2++;
-					}
+			vector<bool> IWAPBF5 = iwapBF(wxb2, whiteReachI, xbSource, nv2.at(j), whiteInWings, irregular);
+			//int counter2 = 0;
+			int tempMaxW;
+			if (wxb2.size() > 0) {
+				IWAP2b = true;
+				tempMaxW = *max_element(wxb2.begin(), wxb2.end());
+				if (!maxSet) {
+					maxW2b = tempMaxW;
+					maxSet = true;
+				}
+				else if (tempMaxW > maxW2b) {
+					maxW2b = tempMaxW;
 				}
 			}
+
+			// for (int k = 0; k < IWAPBF5.size(); k++) {
+			// 	if (IWAPBF5.at(k)) {
+			// 		IWAP2b = true;
+					
+			// 		if (wxb2.at(counter2) > maxW2b) {
+			// 			maxW2b = wxb2.at(counter2);
+			// 			counter2++;
+			// 		}
+			// 	}
+			// }
 			
 			xbSource.clear();
 			wxb2.clear();
@@ -2300,9 +2019,7 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 		
 		if (IWAP2b) {
 			vector<int> tempE7;
-			//Recall node B is 1 and regular vertices xj with N2 are mapped to vertex 2j+1
-			//tempE7.push_back(1);
-			//Recall node x_b^2 is 5 and regular vertices xj with N1 are mapped to vertex 2j (+6)
+			//Recall node x_b^2 is 5 and regular vertices xj with N2 are mapped to vertex 2j+1 (+6)
 			tempE7.push_back(5);
 			tempE7.push_back(2*(j+3)+1);
 			tempE7.push_back(maxW2b);
@@ -2314,42 +2031,7 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 		
 	}	
 	
-	//cout << "size of new graph B1: "<< newGraphB.size()<<endl;
-	
-    
-	//Correct Edmonds
-	vector<int> whiteInIrregularWings;
-	for (int i = 0; i < whiteverticesNonAdjacentAorB.size(); i++) {
-		int countwiW =0;
-		for (int j = 0; j < irregular.size(); j++) {
-			if (C[whiteverticesNonAdjacentAorB.at(i)][irregular.at(j)]) {
-				countwiW++;	
-			}
-		}
-		
-		// vector<int> tiiW;
-		// tiiW. push_back(whiteverticesNonAdjacentAorB.at(i));
-		// for (int j = 0; j < irregularPairs.size(); j++) {
-		// 	if (adjacent(tiiW, irregularPairs.at(j))) {
-		// 		countwiW++;
-		// 	}
-		// }
-		// tiiW.clear();
-		
-		//Has to be adjacent to two irregular vertices to be in an irregular wing (can't be adjacent two more than 2 either)
-		if (countwiW >=2) {
-			whiteInIrregularWings. push_back(whiteverticesNonAdjacentAorB.at(i));
-		}
-	}
-	
-	//There shouldn't any duplicates, but can keep for now
-	vector<int>::iterator itWiiW;
-	itWiiW = unique(whiteInIrregularWings.begin(), whiteInIrregularWings.end());
-	whiteInIrregularWings.resize(distance(whiteInIrregularWings.begin(),itWiiW) );
-	
-	sort(whiteInIrregularWings.begin(), whiteInIrregularWings.end());
-	//Construct W(xi,xj):= Union of all wings reachable by irregular vertices to both xi and xj
-	//So far we have white in wing, we want to save white in irregular wings
+	//cout << "size of new graph B: "<< newGraphB.size()<<endl;
 	
 	// Add edges between regularII vertices x_i and x_j ---> four cases
 	// Edges between x_i^1 and x_j^2
@@ -2359,27 +2041,42 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 	for (int i = 0; i < nv1.size(); i++) {
 		for (int k = 0; k < nv2.size(); k++) {
 			int maxNV12 = 0;
+			bool maxSet = false;
 			for (int j = 0 ; j < nv1[i].size(); j++) {
 				vector<int> nv1Source;
 				nv1Source.push_back(nv1[i].at(j));
 				if (i != k) {
-					vector<bool> IWAPBF8 = iwapBF(wnv12, whiteReachIW12, nv1Source, nv2.at(k), whiteInWings, irregular);//, irregularPairs);
-					int counternv12 = 0;
-					for (int l = 0; l < IWAPBF8.size(); l++) {
-						if (IWAPBF8.at(l)) {
-							IWAPnv12 = true;
-							
-							if (wnv12.at(counternv12) > maxNV12) {
-								maxNV12 = wnv12.at(counternv12);
-								counternv12++;
-							}
+					vector<bool> IWAPBF8 = iwapBF(wnv12, whiteReachIW12, nv1Source, nv2.at(k), whiteInWings, irregular);
+					//int counternv12 = 0;
+					int tempMaxW;
+					if (wnv12.size() > 0) {
+						IWAPnv12 = true;
+						tempMaxW = *max_element(wnv12.begin(), wnv12.end());
+						if (!maxSet) {
+							maxNV12 = tempMaxW;
+							maxSet = true;
+						}
+						else if (tempMaxW > maxNV12) {
+							maxNV12 = tempMaxW;
 						}
 					}
+
+					// for (int l = 0; l < IWAPBF8.size(); l++) {
+					// 	if (IWAPBF8.at(l)) {
+					// 		IWAPnv12 = true;
+							
+					// 		if (wnv12.at(counternv12) > maxNV12) {
+					// 			maxNV12 = wnv12.at(counternv12);
+					// 			counternv12++;
+					// 		}
+					// 	}
+					// }
 					wnv12.clear();
 					whiteReachIW12.clear(); //this doesn't get altered in iwapBF() at this moment
 				}
 				nv1Source.clear();
 			}
+
 			if (IWAPnv12) {
 				vector<int> tempE8;
 				//Recall vertices xi with N1 are mapped to vertex 2i (+6)
@@ -2405,27 +2102,42 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 	for (int i = 0; i < nv2.size(); i++) {
 		for (int k = 0; k < nv1.size(); k++) {
 			int maxNV21 = 0;
+			bool maxSet = false;
 			for (int j = 0 ; j < nv2[i].size(); j++) {
 				vector<int> nv2Source;
 				nv2Source.push_back(nv2[i].at(j));
 				if (i != k) {
-					vector<bool> IWAPBF9 = iwapBF(wnv21, whiteReachIW21, nv2Source, nv1.at(k), whiteInWings, irregular);//, irregularPairs);
-					int counternv21 = 0;
-					for (int l = 0; l < IWAPBF9.size(); l++) {
-						if (IWAPBF9.at(l)) {
-							IWAPnv21 = true;
-							
-							if (wnv21.at(counternv21) > maxNV21) {
-								maxNV21 = wnv21.at(counternv21);
-								counternv21++;
-							}
+					vector<bool> IWAPBF9 = iwapBF(wnv21, whiteReachIW21, nv2Source, nv1.at(k), whiteInWings, irregular);
+					//int counternv21 = 0;
+					int tempMaxW;
+					if (wnv21.size() > 0) {
+						IWAPnv21 = true;
+						tempMaxW = *max_element(wnv21.begin(), wnv21.end());
+						if (!maxSet) {
+							maxNV21 = tempMaxW;
+							maxSet = true;
+						}
+						else if (tempMaxW > maxNV21) {
+							maxNV21 = tempMaxW;
 						}
 					}
+
+					// for (int l = 0; l < IWAPBF9.size(); l++) {
+					// 	if (IWAPBF9.at(l)) {
+					// 		IWAPnv21 = true;
+							
+					// 		if (wnv21.at(counternv21) > maxNV21) {
+					// 			maxNV21 = wnv21.at(counternv21);
+					// 			counternv21++;
+					// 		}
+					// 	}
+					// }
 					wnv21.clear();
 					whiteReachIW21.clear(); //this doesn't get altered in iwapBF() at this moment
 				}
 				nv2Source.clear();
 			}
+
 			if (IWAPnv21) {
 				vector<int> tempE9;
 				//Recall vertices xi with N2 are mapped to vertex 2i+1 (+6)
@@ -2451,22 +2163,36 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 	for (int i = 0; i < nv1.size(); i++) {
 		for (int k = 0; k < nv1.size(); k++) {
 			int maxNV11 = 0;
+			bool maxSet = false;
 			for (int j = 0 ; j < nv1[i].size(); j++) {
 				vector<int> nv1Source;
 				nv1Source.push_back(nv1[i].at(j));
 				if (i != k) {
-					vector<bool> IWAPBF10 = iwapBF(wnv11, whiteReachIW11, nv1Source, nv1.at(k), whiteInWings, irregular);//, irregularPairs);
-					int counternv11 = 0;
-					for (int l = 0; l < IWAPBF10.size(); l++) {
-						if (IWAPBF10.at(l)) {
-							IWAPnv11 = true;
-							
-							if (wnv11.at(counternv11) > maxNV11) {
-								maxNV11 = wnv11.at(counternv11);
-								counternv11++;
-							}
+					vector<bool> IWAPBF10 = iwapBF(wnv11, whiteReachIW11, nv1Source, nv1.at(k), whiteInWings, irregular);
+					//int counternv11 = 0;
+					int tempMaxW;
+					if (wnv11.size() > 0) {
+						IWAPnv11 = true;
+						tempMaxW = *max_element(wnv11.begin(), wnv11.end());
+						if (!maxSet) {
+							maxNV11 = tempMaxW;
+							maxSet = true;
+						}
+						else if (tempMaxW > maxNV11) {
+							maxNV11 = tempMaxW;
 						}
 					}
+
+					// for (int l = 0; l < IWAPBF10.size(); l++) {
+					// 	if (IWAPBF10.at(l)) {
+					// 		IWAPnv11 = true;
+							
+					// 		if (wnv11.at(counternv11) > maxNV11) {
+					// 			maxNV11 = wnv11.at(counternv11);
+					// 			counternv11++;
+					// 		}
+					// 	}
+					// }
 					wnv11.clear();
 					whiteReachIW11.clear(); //this doesn't get altered in iwapBF() at this moment
 				}
@@ -2497,22 +2223,36 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 	for (int i = 0; i < nv2.size(); i++) {
 		for (int k = 0; k < nv2.size(); k++) {
 			int maxNV22 = 0;
+			bool maxSet = false;
 			for (int j = 0 ; j < nv2[i].size(); j++) {
 				vector<int> nv2Source;
 				nv2Source.push_back(nv2[i].at(j));
 				if (i != k) {
-					vector<bool> IWAPBF11 = iwapBF(wnv22, whiteReachIW22, nv2Source, nv2.at(k), whiteInWings, irregular);//, irregularPairs);
-					int counternv22 = 0;
-					for (int l = 0; l < IWAPBF11.size(); l++) {
-						if (IWAPBF11.at(l)) {
-							IWAPnv22 = true;
-							
-							if (wnv22.at(counternv22) > maxNV22) {
-								maxNV22 = wnv22.at(counternv22);
-								counternv22++;
-							}
+					vector<bool> IWAPBF11 = iwapBF(wnv22, whiteReachIW22, nv2Source, nv2.at(k), whiteInWings, irregular);
+					//int counternv22 = 0;
+					int tempMaxW;
+					if (wnv22.size() > 0) {
+						IWAPnv22 = true;
+						tempMaxW = *max_element(wnv22.begin(), wnv22.end());
+						if (!maxSet) {
+							maxNV22 = tempMaxW;
+							maxSet = true;
+						}
+						else if (tempMaxW > maxNV22) {
+							maxNV22 = tempMaxW;
 						}
 					}
+
+					// for (int l = 0; l < IWAPBF11.size(); l++) {
+					// 	if (IWAPBF11.at(l)) {
+					// 		IWAPnv22 = true;
+							
+					// 		if (wnv22.at(counternv22) > maxNV22) {
+					// 			maxNV22 = wnv22.at(counternv22);
+					// 			counternv22++;
+					// 		}
+					// 	}
+					// }
 					wnv22.clear();
 					whiteReachIW22.clear(); //this doesn't get altered in iwapBF() at this moment
 				}
@@ -2536,8 +2276,43 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 		
 	}
 
-	sort( newGraphB. begin(), newGraphB. end());
+	sort(newGraphB.begin(), newGraphB.end());
+
+
+	//Correct Edmonds
+	vector<int> whiteInIrregularWings;
+	for (int i = 0; i < whiteverticesNonAdjacentAorB.size(); i++) {
+		int countwiW =0;
+		for (int j = 0; j < irregular.size(); j++) {
+			if (C[whiteverticesNonAdjacentAorB.at(i)][irregular.at(j)]) {
+				countwiW++;	
+			}
+		}
+		
+		// vector<int> tiiW;
+		// tiiW. push_back(whiteverticesNonAdjacentAorB.at(i));
+		// for (int j = 0; j < irregularPairs.size(); j++) {
+		// 	if (adjacent(tiiW, irregularPairs.at(j))) {
+		// 		countwiW++;
+		// 	}
+		// }
+		// tiiW.clear();
+		
+		//Has to be adjacent to two irregular vertices to be in an irregular wing (can't be adjacent two more than 2 either)
+		if (countwiW >=2) {
+			whiteInIrregularWings.push_back(whiteverticesNonAdjacentAorB.at(i));
+		}
+	}
 	
+	//There shouldn't any duplicates, but can keep for now
+	vector<int>::iterator itWiiW;
+	itWiiW = unique(whiteInIrregularWings.begin(), whiteInIrregularWings.end());
+	whiteInIrregularWings.resize(distance(whiteInIrregularWings.begin(),itWiiW) );
+	
+	sort(whiteInIrregularWings.begin(), whiteInIrregularWings.end());
+	//Construct W(xi,xj):= Union of all wings reachable by irregular vertices to both xi and xj
+	//So far we have white in wing, we want to save white in irregular wings
+
 	
 	int edmondsEdgesCorrected = numberOfEdgesEdmonds;
 	//Make correction of Edmonds' graph according to Nakamura & Tamura
@@ -2545,9 +2320,9 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 	//int regCorr = regularII.size() + regularIIPairs.size();
 	int regCorr = regularII.size();
 	for (int i = 0; i < regCorr; i++) {
-		vector<int> wingsReachThroughIrregxi = edmondsCorrection1( neighborsV.at(i), whiteInWings, irregular);//, irregularPairs);
+		vector<int> wingsReachThroughIrregxi = edmondsCorrection1(neighborsV.at(i), whiteInWings, irregular);
 		for (int j = i+1; j < regCorr-1; j++) {
-			vector<int> wingsReachThroughIrregxj = edmondsCorrection1( neighborsV.at(j), whiteInWings, irregular);//, irregularPairs);
+			vector<int> wingsReachThroughIrregxj = edmondsCorrection1(neighborsV.at(j), whiteInWings, irregular);
 			vector<int> Wxixj( wingsReachThroughIrregxi.size() + wingsReachThroughIrregxj.size() );
 			//Get union of all wings that are reachable to both xi and xj
 			vector<int>::iterator itInt;
@@ -2560,7 +2335,7 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 			
 			vector<int>::iterator itInt2;
 			
-			itInt2 = set_intersection( nv1[j].begin(), nv1[j].end(), Wxixj.begin(), Wxixj.end(), n1eWxixj.begin());
+			itInt2 = set_intersection(nv1[j].begin(), nv1[j].end(), Wxixj.begin(), Wxixj.end(), n1eWxixj.begin());
 			
 			n1eWxixj.resize(itInt2 - n1eWxixj.begin());
 			
@@ -2586,7 +2361,7 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 			
 			vector<int>::iterator itInt3;
 			
-			itInt3 = set_intersection( nv2[j].begin(), nv2[j].end(), Wxixj.begin(), Wxixj.end(), n2eWxixj.begin());
+			itInt3 = set_intersection(nv2[j].begin(), nv2[j].end(), Wxixj.begin(), Wxixj.end(), n2eWxixj.begin());
 			
 			n2eWxixj.resize(itInt3 - n2eWxixj.begin());
 			
@@ -2612,7 +2387,7 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 			
 			vector<int>::iterator itInt4;
 			
-			itInt4 = set_intersection( nv1[i].begin(), nv1[i].end(), Wxixj.begin(), Wxixj.end(), n1xieWxixj.begin());
+			itInt4 = set_intersection(nv1[i].begin(), nv1[i].end(), Wxixj.begin(), Wxixj.end(), n1xieWxixj.begin());
 			
 			n1xieWxixj.resize(itInt4 - n1xieWxixj.begin());
 			
@@ -2637,7 +2412,7 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 			
 			vector<int>::iterator itInt5;
 			
-			itInt5 = set_intersection( nv2[i].begin(), nv2[i].end(), Wxixj.begin(), Wxixj.end(), n2xieWxixj.begin());
+			itInt5 = set_intersection(nv2[i].begin(), nv2[i].end(), Wxixj.begin(), Wxixj.end(), n2xieWxixj.begin());
 			
 			n2xieWxixj.resize(itInt5 - n1xieWxixj.begin());
 			
@@ -2666,13 +2441,14 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 		wingsReachThroughIrregxi.clear();
 	}
 	
+
 	//Make correction for lemma 3.4
 	
 	//cout << "nv1.size:"<<nv1.size()<<endl;
 	//cout << "nv2.size:"<<nv2.size()<<endl;
 	// Recall size of nv1 and nv2 is the same
 
-	// Can use a while loop
+	// Can use a while loop?
 	int nv = nv1.size();
 	for (int i = 0; i < nv; i++) {
 		for (int j = 0; j < nv; j++) {
@@ -2803,18 +2579,18 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 void Graph::Minty(vector<int> S){
     
     //This recursion happens while S is not optimal. Later we will determine optimality of S
-    //1. S = empty
-    vector<int> myS;// We will make a copy of S, which is originally empty
+    //1. Copy stable set S into myS (S is intially empty)
+    vector<int> myS;
     
-    myS.resize( S.size(), '\0');  // '\0' is initial arbitrary value for elements
+    myS.resize(S.size(), '\0');  // '\0' is initial arbitrary value for elements
     copy(S.begin(), S.end(), myS.begin());
     
     //1.1 Obtain white vertices
     vector<int> whiteVertices(n);                      // 0  0  0 ... 0 (n of them)
     vector<int>::iterator it;
     
-    sort (myS.begin(),myS.end());
-    sort (nodes.begin(),nodes.end());   // Sort for consistency
+    sort(myS.begin(),myS.end());
+    sort(nodes.begin(),nodes.end()); //Need to sort before taking symmetric difference
     
     it=std::set_symmetric_difference (myS.begin(),myS.end(), nodes.begin(),nodes.end(), whiteVertices.begin());
     //  whitevertices ... 0  0  0  0
@@ -2848,31 +2624,29 @@ void Graph::Minty(vector<int> S){
     
     //3. Find maximum weighted white augmenting path between two distinct free vertices
     vector<int> maximumWWAP = maxWeightWhiteAugPath(superFreeVertices, freeVertices, boundedVertices, myS);
-    //vector<int> maximumWWAP;
 
     //cout<<"Max weight white augmenting path"<<endl;
     //PrintVector(maximumWWAP);
-    
     
     //4. If no such path exists for S, then stop. S is optimal;
     if (maximumWWAP.size() == 0) {
         
         cout<<"#####################max weight co-2-plex########################:"<<endl;
         PrintVector(myS);
+		//Should write myS into a file, along with its weight
         //exit(0);
         
     }
     else{
-       //5. S = S-P and return to (2)
+       //5. S = S delta P and return to (1)
         vector<int> myNewS(n); // 0  0  0 ... 0 (n of them)
         vector<int>::iterator itt;
         
-        sort (myS.begin(),myS.end());
-        sort (maximumWWAP.begin(),maximumWWAP.end());
+        sort(myS.begin(),myS.end());
+        sort(maximumWWAP.begin(), maximumWWAP.end());
         
-        itt=std::set_symmetric_difference (myS.begin(),myS.end(), maximumWWAP.begin(), maximumWWAP.end(), myNewS.begin());
-        //  myNewS ... 0  0  0  0
-        myNewS.resize(itt-myNewS.begin());//only white vertices
+        itt=std::set_symmetric_difference(myS.begin(),myS.end(), maximumWWAP.begin(), maximumWWAP.end(), myNewS.begin());
+        myNewS.resize(itt-myNewS.begin());
         
         /*cout << "The symmetric difference of S and P has " << (myNewS.size()) << " elements:\n";
         for (itt=myNewS.begin(); itt!=myNewS.end(); ++itt)
