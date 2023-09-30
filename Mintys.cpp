@@ -1432,6 +1432,7 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 			}
 		}
 		
+		sort(tempRegII.begin(), tempRegII.end());
 		neighborsV.push_back(tempRegII); //neigborsV.at(i) then contains a vector of neighbors of regularII node i, which may empty
 		tempRegII.clear();
     }
@@ -1667,12 +1668,12 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 			}
 		}
 
-		if (numClassesIn != 1) {
+		if (numClassesIn != 2) {
 			cout << "White vertex" << j << "is in" << numClassesIn << "classes." << endl;
 		}
 	}*/
 
-	/* Can also check if nv1(i).at(i) union nv2.at(i) equals neighborsV.at(i)*/
+	/* Can also check if nv1(i).at(i) and nv2.at(i) partition neighborsV.at(i)*/
     
 	//cout << "rbs before correction:"<< regularII.size() <<endl;
     // A regularII vertex with an empty node class, together with all adjoining white vertices, may be deleted
@@ -1709,18 +1710,24 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
     // }
 
 	//cout << "regularII size:"<< regularII.size()<<endl;
-	// Update whiteRBS
+	// Update whiteRBS if deleted white vertices from whiteverticesNonAdjacentAorB
 	// whiteRBS.clear();
 	// whiteRBS.resize(whiteverticesNonAdjacentAorB.size(), '\0');
     // copy(whiteverticesNonAdjacentAorB.begin(), whiteverticesNonAdjacentAorB.end(), whiteRBS.begin());
     // whiteRBS.push_back(freeVertexA);
     // whiteRBS.push_back(freeVertexB);
 
+	//Sort the vertices inside each class
+	for (int i = 0; i < neighborsV.size(); i++) {
+		sort(nv1[i].begin(), nv1[i].end());
+		sort(nv2[i].begin(), nv2[i].end());
+	}
+
     
 	/***************** Construction of the Edmonds' Graph *****************/
 	
 	// R is the number of black vertices in the Edmonds graph
-	int R = regularII.size() + 2; // 2 for the regularI vertices
+	int R = regularII.size() + 2; // +2 for the regularI vertices
 	N = 2*R + 2; // number of vertices in the Edmonds graph (+2 for a^ and b^)
 	//cout << "R:  "<< R<<endl;
     //We form a graph with 2R+2 vertices and R black branches
@@ -2278,63 +2285,108 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 
 	sort(newGraphB.begin(), newGraphB.end());
 
+	/************* Apply the corrections *************/
 
-	//Correct Edmonds
-	vector<int> whiteInIrregularWings;
+	int edmondsEdgesCorrected = numberOfEdgesEdmonds;
+
+	// Determine if for every pair of regularII vertices xi and xi, case A or case B occurs.
+	// Lemma 3.2: Revisions can always be made.
+	// Lemma 3.4: One of Case A or Case B can exist - apply the appropriate revision.
+	// Lemma 3.5: If one of Case A or Case B exists, apply the revision.
+
+	//MOVE THIS TO AFTER LEMMA 3.2
+	//caseA (caseB) will contain vectors consisting of the two regularII vertices for which each Case A (Case B) exists
+	vector< vector<int> > caseA;
+	vector< vector<int> > caseB;
+	for (int i=0; i < regularII.size(); i++) {
+		for (int j=i+1; j < regularII.size(); j++) {
+			bool P11found = false;
+			bool P22found = false;
+			bool P12found = false;
+			bool P21found = false;
+			int P11weight = 0;
+			int P22weight = 0;
+			int P12weight = 0;
+			int P21weight = 0;
+			for (int k=0; k < newGraphB.size(); k++) {
+				//x_i^1 and x_i^2 correspond to 2*(i+3) and 2*(i+3)+1
+				if (newGraphB[k].at(0) == 2*(i+3) && newGraphB[k].at(1) == 2*(j+3)) {
+					P11found = true;
+					P11weight = newGraphB[k].at(2);
+				}
+				if (newGraphB[k].at(0) == (2*(i+3)+1) && newGraphB[k].at(1) == (2*(j+3)+1)) {
+					P22found = true;
+					P22weight = newGraphB[k].at(2);
+				}
+				if (newGraphB[k].at(0) == 2*(i+3) && newGraphB[k].at(1) == (2*(j+3)+1)) {
+					P12found = true;
+					P12weight = newGraphB[k].at(2);
+				}
+				if (newGraphB[k].at(0) == (2*(i+3)+1) && newGraphB[k].at(1) == 2*(j+3)) {
+					P21found = true;
+					P21weight = newGraphB[k].at(2);
+				}
+				if (P11found && P22found && P12found && P21found) {
+					break;
+				}
+			}
+
+			vector<int> tempEdge;
+			// Push the indices or the vertices themselves?
+			tempEdge.push_back(regularII.at(i));
+			tempEdge.push_back(regularII.at(j));
+			if (P11found && P22found && (P11weight + P22weight > weights.at(regularII.at(i))) + weights.at(regularII.at(j))) {
+				caseA.push_back(tempEdge);
+			}
+
+			if (P12found && P21found && (P12weight + P21weight > weights.at(regularII.at(i))) + weights.at(regularII.at(j))) {
+				caseB.push_back(tempEdge);
+			}
+			tempEdge.clear();
+
+		}
+	}
+
+	//Make correction for Lemma 3.2
+
+	//Construct W(xi,xj):= Union of all wings reachable by irregular vertices to both xi and xj
+
+	//Appears to not be used at all; keep for now, might be useful
+	vector<int> whiteInIrregularWings; //contains all white vertices adjacent to an irregular vertex
 	for (int i = 0; i < whiteverticesNonAdjacentAorB.size(); i++) {
-		int countwiW =0;
+		int countwiW = 0;
 		for (int j = 0; j < irregular.size(); j++) {
 			if (C[whiteverticesNonAdjacentAorB.at(i)][irregular.at(j)]) {
 				countwiW++;	
 			}
 		}
 		
-		// vector<int> tiiW;
-		// tiiW. push_back(whiteverticesNonAdjacentAorB.at(i));
-		// for (int j = 0; j < irregularPairs.size(); j++) {
-		// 	if (adjacent(tiiW, irregularPairs.at(j))) {
-		// 		countwiW++;
-		// 	}
-		// }
-		// tiiW.clear();
-		
-		//Has to be adjacent to two irregular vertices to be in an irregular wing (can't be adjacent two more than 2 either)
-		if (countwiW >=2) {
+		if (countwiW > 0) {
 			whiteInIrregularWings.push_back(whiteverticesNonAdjacentAorB.at(i));
 		}
 	}
-	
-	//There shouldn't any duplicates, but can keep for now
-	vector<int>::iterator itWiiW;
-	itWiiW = unique(whiteInIrregularWings.begin(), whiteInIrregularWings.end());
-	whiteInIrregularWings.resize(distance(whiteInIrregularWings.begin(),itWiiW) );
-	
 	sort(whiteInIrregularWings.begin(), whiteInIrregularWings.end());
-	//Construct W(xi,xj):= Union of all wings reachable by irregular vertices to both xi and xj
-	//So far we have white in wing, we want to save white in irregular wings
 
-	
-	int edmondsEdgesCorrected = numberOfEdgesEdmonds;
-	//Make correction of Edmonds' graph according to Nakamura & Tamura
-	//Lemma 3.2 correction
-	//int regCorr = regularII.size() + regularIIPairs.size();
-	int regCorr = regularII.size();
-	for (int i = 0; i < regCorr; i++) {
+
+	for (int i = 0; i < regularII.size(); i++) {
 		vector<int> wingsReachThroughIrregxi = edmondsCorrection1(neighborsV.at(i), whiteInWings, irregular);
-		for (int j = i+1; j < regCorr-1; j++) {
+		for (int j = i+1; j < regularII.size(); j++) { // was j < regularII.size()-1
 			vector<int> wingsReachThroughIrregxj = edmondsCorrection1(neighborsV.at(j), whiteInWings, irregular);
 			vector<int> Wxixj( wingsReachThroughIrregxi.size() + wingsReachThroughIrregxj.size() );
 			//Get union of all wings that are reachable to both xi and xj
 			vector<int>::iterator itInt;
-			
-			itInt =set_intersection (wingsReachThroughIrregxi.begin(), wingsReachThroughIrregxi.end(), wingsReachThroughIrregxj.begin(),wingsReachThroughIrregxj.end(), Wxixj.begin());
+			//Assure that wingsReachThroughIrreg for both xi and xj are sorted before taking set intersection
+
+			//Intersection correct? Have whichWings, enumerateWings, WhiteWingsInAll, whichWings
+			itInt = set_intersection(wingsReachThroughIrregxi.begin(), wingsReachThroughIrregxi.end(), wingsReachThroughIrregxj.begin(),wingsReachThroughIrregxj.end(), Wxixj.begin());
 			
 			Wxixj.resize(itInt - Wxixj.begin());
 			///////////////////////////////////////////////////////////////////////////////////
+			//If N1(xj) is a subset of W(xi,xj), we can delete edges (x_i^1, x_j^2) and (x_i^2, x_j^2)
 			vector<int> n1eWxixj(nv1[j].size()+Wxixj.size());
 			
 			vector<int>::iterator itInt2;
-			
+			//Each nv1[i] and nv2[i] was sorted above; W(xi,xj) is returned sorted from set_intersection
 			itInt2 = set_intersection(nv1[j].begin(), nv1[j].end(), Wxixj.begin(), Wxixj.end(), n1eWxixj.begin());
 			
 			n1eWxixj.resize(itInt2 - n1eWxixj.begin());
@@ -2357,6 +2409,7 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 				
 			}
 			////////////////////////////////////////////////////////////////////////////////////
+			//If N2(xj) is a subset of W(xi,xj), we can delete edges (x_i^1, x_j^1) and (x_i^2, x_j^1)
 			vector<int> n2eWxixj(nv2[j].size()+Wxixj.size());
 			
 			vector<int>::iterator itInt3;
@@ -2367,7 +2420,6 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 			
 			if (n2eWxixj.size() == nv2[j].size() && nv2[j].size() > 0) {
 				//delete xi1xj1 and xi2xj1 (2*(i+3),2*(j+3)) and (2*(i+3)+1,2*(j+3))
-				
 				for (int k = 0; k < newGraphB.size(); k++) {
 					if (newGraphB[k].at(0) == 2*(i+3) && newGraphB[k].at(1) == 2*(j+3)) {
 						newGraphB.erase(newGraphB.begin() + k);
@@ -2383,6 +2435,7 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 				}
 			}
 			//////////////////////////////////////////////////////////////////////////////////////
+			//If N1(xi) is a subset of W(xi,xj), we can delete edges (x_i^2, x_j^1) and (x_i^2, x_j^2)
 			vector<int> n1xieWxixj(nv1[i].size()+Wxixj.size());
 			
 			vector<int>::iterator itInt4;
@@ -2408,6 +2461,7 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 				}
 			}
 			////////////////////////////////////////////////////////////////////////////////////
+			//If N2(xi) is a subset of W(xi,xj), we can delete edges (x_i^1, x_j^1) and (x_i^1, x_j^2)
 			vector<int> n2xieWxixj(nv2[i].size()+Wxixj.size());
 			
 			vector<int>::iterator itInt5;
@@ -2442,19 +2496,20 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 	}
 	
 
-	//Make correction for lemma 3.4
+	//Make correction for Lemma 3.4
 	
 	//cout << "nv1.size:"<<nv1.size()<<endl;
 	//cout << "nv2.size:"<<nv2.size()<<endl;
 	// Recall size of nv1 and nv2 is the same
 
 	// Can use a while loop?
-	int nv = nv1.size();
+	int nv = neighborsV.size();
 	for (int i = 0; i < nv; i++) {
 		for (int j = 0; j < nv; j++) {
 			for (int l = 0; l < nv1[i].size(); l++) {
 				for (int ll = 0; ll < nv2[j].size(); ll++) {
 					// Is this a valid way to check that paths P11 and P22 have no irregular vertices?
+					// Can use adjacent function?
 					if (C[nv1[i].at(l)][nv2[j].at(ll)]) {
 						//delete xi1xj1 and xi2xj2 (2*(i+3),2*(j+3)) and (2*(i+3)+1,2*(j+3)+1)
 						for (int k = 0; k < newGraphB.size(); k++) {
@@ -2476,8 +2531,9 @@ vector < vector<int> > Graph::Edmonds(int freeVertexA, int freeVertexB, int xa, 
 			}
 		}
 	}
+
 	
-	//Make correction from lemma 3.5
+	//Make correction from Lemma 3.5
 	// edmondsCorrection3(int y11, int yl1, int y12, int yl2, vector<int> whiteWings, vector<int> irreg, vector< vector<int> > irregPairs, zk, wP11i, wP22i, wP11j, wP22j)
 	// The function above returns the size of paths y11,z1,y21,...,zl-1,yl1 & y22,z1,y22,...,zl-1,yl2
 	for (int i = 0; i < nv; i++) {
